@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siparişler - Gopak Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .orders-section {
+            min-height: 100vh;
+            padding: 60px 0;
+            background: #f8f9fa;
+        }
+        
+        .orders-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .orders-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+        
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .order-number {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #FF6000;
+        }
+        
+        .order-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .customer-info {
+            margin-bottom: 16px;
+        }
+        
+        .customer-info h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .order-items {
+            margin-bottom: 16px;
+        }
+        
+        .order-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .order-total {
+            text-align: right;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #FF6000;
+        }
+        
+        .no-orders {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 60px;
+        }
+        
+        .clear-orders {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #FF6000;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="orders-section">
+        <div class="orders-container">
+            <a href="index.html" class="back-link">← Ana Sayfaya Dön</a>
+            <h1 class="orders-title">📋 Siparişler</h1>
+            <div id="ordersContainer">
+                <!-- Orders will be loaded here -->
+            </div>
+            <div style="text-align: center;">
+                <button class="clear-orders" onclick="clearAllOrders()">Tüm Siparişleri Temizle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadOrders() {
+            const ordersContainer = document.getElementById('ordersContainer');
+            const orders = JSON.parse(localStorage.getItem('gopak_orders') || '[]');
+            
+            if (orders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <p>Henüz sipariş bulunmuyor.</p>
+                        <a href="index.html#sales" style="color: #FF6000;">Alışverişe başla</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            const ordersHtml = orders.map(order => {
+                const orderDate = new Date(order.order_date).toLocaleString('tr-TR');
+                const itemsHtml = order.cartItems.map(item => `
+                    <div class="order-item">
+                        <strong>${item.typeName}</strong><br>
+                        ${item.colorName} - ${item.size} cm - ${item.quantity} adet<br>
+                        <strong>${item.total.toFixed(0)}₺</strong>
+                    </div>
+                `).join('');
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-number">#${order.order_number}</div>
+                            <div class="order-date">${orderDate}</div>
+                        </div>
+                        <div class="customer-info">
+                            <h4>👤 ${order.firstName} ${order.lastName}</h4>
+                            <p>📞 ${order.phone}</p>
+                            <p>📧 ${order.email}</p>
+                            <p>📍 ${order.address}</p>
+                        </div>
+                        <div class="order-items">
+                            <h4>🛒 Sipariş Detayları:</h4>
+                            ${itemsHtml}
+                        </div>
+                        <div class="order-total">
+                            💰 Toplam: ${order.totalAmount.toFixed(0)}₺
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            ordersContainer.innerHTML = ordersHtml;
+        }
+        
+        function clearAllOrders() {
+            if (confirm('Tüm siparişleri silmek istediğinizden emin misiniz?')) {
+                localStorage.removeItem('gopak_orders');
+                loadOrders();
+                alert('Tüm siparişler temizlendi.');
+            }
+        }
+        
+        // Load orders when page loads
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

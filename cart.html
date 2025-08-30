@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepetim - Gopak | gopaktr.com</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2.1">
+    <style>
+        /* Cart-specific styles */
+        .cart-section {
+            min-height: 100vh;
+            padding: 60px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f0f4f8 100%);
+            color: #333333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cart-section::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: -200px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 96, 0, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .cart-section::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            right: -150px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 96, 0, 0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .cart-container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .cart-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .cart-title {
+            font-size: 2.2em;
+            color: #333333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .cart-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .cart-items {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cart-items::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6000, #ff8533, #FFB366);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cart-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #FF6000, #ff8533);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(255, 96, 0, 0.1);
+            background: linear-gradient(135deg, #ffffff 0%, #fff8f6 100%);
+        }
+
+        .cart-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-specs {
+            color: #666666;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .item-price {
+            color: #FF6000;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-control {
+            background: #ffffff;
+            border: 1px solid #e6e6e6;
+            color: #333333;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .qty-control:hover {
+            border-color: #FF6000;
+            color: #FF6000;
+        }
+
+        .item-remove {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .item-remove:hover {
+            background: rgba(220, 53, 69, 0.15);
+            border-color: #dc3545;
+        }
+
+        .cart-summary {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e6e6e6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: #666666;
+            font-size: 0.9em;
+        }
+
+        .summary-row.total {
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+            margin-top: 16px;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #333333;
+        }
+
+        .summary-row.total .amount {
+            color: #FF6000;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #FF6000;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 16px;
+            box-shadow: 0 2px 6px rgba(255, 96, 0, 0.2);
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 96, 0, 0.3);
+            background: #e55a00;
+        }
+
+        .checkout-btn:disabled {
+            background: #cccccc;
+            color: #888888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666666;
+        }
+
+        .empty-cart-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .continue-shopping {
+            background: #ffffff;
+            border: 1px solid #e6e6e6;
+            color: #333333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 16px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .continue-shopping:hover {
+            background: #f8f9fa;
+            color: #FF6000;
+            text-decoration: none;
+            border-color: #FF6000;
+            box-shadow: 0 2px 6px rgba(255, 96, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .cart-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .cart-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .item-quantity {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-section">
+        <div class="cart-container">
+            <div class="cart-header">
+                <h1 class="cart-title">🛒 Sepetim</h1>
+                <p>Seçtiğiniz ürünleri gözden geçirin ve siparişinizi tamamlayın</p>
+            </div>
+
+            <div id="cartContent">
+                <!-- Cart items will be populated by JavaScript -->
+            </div>
+
+            <div class="cart-actions" style="text-align: center; margin-top: 40px;">
+                <a href="index.html#sales" class="continue-shopping">⬅ Alışverişe Devam Et</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sipariş Bilgileri</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="orderForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">İsim *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Soyisim *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Telefon *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Adres *</label>
+                        <textarea id="address" name="address" rows="3" required></textarea>
+                    </div>
+                    <div class="order-summary-modal">
+                        <h3>Sipariş Özeti</h3>
+                        <div id="modalOrderDetails"></div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="cancelOrder">İptal</button>
+                        <button type="submit" class="btn-submit">Siparişi Tamamla</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=2.1"></script>
+    <script>
+        // Cart page specific functionality
+        class CartPage {
+            constructor() {
+                this.cartManager = null;
+                this.init();
+            }
+
+            init() {
+                // Wait for cart manager to be available
+                if (window.cartManagerInstance) {
+                    this.cartManager = window.cartManagerInstance;
+                    this.renderCart();
+                } else {
+                    // Initialize cart manager if not available
+                    this.cartManager = new CartManager();
+                    this.renderCart();
+                }
+            }
+
+            renderCart() {
+                const cartContent = document.getElementById('cartContent');
+                const cart = this.cartManager.cart;
+
+                if (cart.length === 0) {
+                    cartContent.innerHTML = this.renderEmptyCart();
+                } else {
+                    cartContent.innerHTML = this.renderCartItems(cart);
+                    this.setupCartControls();
+                }
+            }
+
+            renderEmptyCart() {
+                return `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h2>Sepetiniz Boş</h2>
+                        <p>Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için ürün kataloğumuza göz atın.</p>
+                        <a href="index.html#sales" class="continue-shopping">Alışverişe Başla</a>
+                    </div>
+                `;
+            }
+
+            renderCartItems(cart) {
+                const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+                const totalDiscount = cart.reduce((sum, item) => sum + (item.subtotal * item.discount), 0);
+                const total = cart.reduce((sum, item) => sum + item.total, 0);
+
+                const itemsHtml = cart.map((item, index) => `
+                    <div class="cart-item" data-item-id="${item.id}">
+                        <div class="item-details">
+                            <div class="item-name">${item.typeName}</div>
+                            <div class="item-specs">${item.colorName} - ${item.size} cm</div>
+                            <div class="item-price">${item.total.toFixed(0)}₺</div>
+                        </div>
+                        <div class="item-quantity">
+                            <span class="qty-control" onclick="cartPage.updateQuantity(${item.id}, ${item.quantity - 50})">-</span>
+                            <span style="margin: 0 10px; font-weight: bold;">${item.quantity} adet</span>
+                            <span class="qty-control" onclick="cartPage.updateQuantity(${item.id}, ${item.quantity + 50})">+</span>
+                        </div>
+                        <button class="item-remove" onclick="cartPage.removeItem(${item.id})">🗑 Kaldır</button>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="cart-content">
+                        <div class="cart-items">
+                            <h3 style="margin-bottom: 20px; color: #333333; font-weight: 600;">Sepetinizdeki Ürünler (${cart.length})</h3>
+                            ${itemsHtml}
+                        </div>
+                        <div class="cart-summary">
+                            <h3 style="margin-bottom: 20px; color: #333333; font-weight: 600;">Sipariş Özeti</h3>
+                            <div class="summary-row">
+                                <span>Ara Toplam:</span>
+                                <span>${subtotal.toFixed(0)}₺</span>
+                            </div>
+                            ${totalDiscount > 0 ? `
+                                <div class="summary-row">
+                                    <span>İndirim (%10):</span>
+                                    <span style="color: #FF6000;">-${totalDiscount.toFixed(0)}₺</span>
+                                </div>
+                            ` : ''}
+                            <div class="summary-row">
+                                <span>Kargo:</span>
+                                <span style="color: #FF6000;">Ücretsiz</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Toplam:</span>
+                                <span class="amount">${total.toFixed(0)}₺</span>
+                            </div>
+                            <button class="checkout-btn" onclick="cartPage.proceedToCheckout()">
+                                💳 Ödemeye Geç
+                            </button>
+                            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #666666;">
+                                🔒 Güvenli ödeme ile alışverişinizi tamamlayın
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            setupCartControls() {
+                // Controls are handled by onclick events in the HTML
+            }
+
+            updateQuantity(itemId, newQuantity) {
+                if (newQuantity < 50) {
+                    if (confirm('Bu ürünü sepetten kaldırmak istediğinizden emin misiniz?')) {
+                        this.removeItem(itemId);
+                    }
+                    return;
+                }
+
+                // Find and update the item
+                const item = this.cartManager.cart.find(item => item.id === itemId);
+                if (item) {
+                    item.quantity = newQuantity;
+                    // Recalculate pricing
+                    item.subtotal = item.unitPrice * item.quantity;
+                    item.total = item.subtotal * (1 - item.discount);
+                    
+                    this.cartManager.saveCart();
+                    this.renderCart();
+                }
+            }
+
+            removeItem(itemId) {
+                this.cartManager.removeFromCart(itemId);
+                this.renderCart();
+                
+                // Show removal notification
+                this.showNotification('Ürün sepetten kaldırıldı', 'info');
+            }
+
+            proceedToCheckout() {
+                if (this.cartManager.cart.length === 0) {
+                    alert('Sepetinizde ürün bulunmuyor.');
+                    return;
+                }
+
+                // Show order modal for checkout
+                this.showOrderModal();
+            }
+
+            showOrderModal() {
+                const modal = document.getElementById('orderModal');
+                const modalOrderDetails = document.getElementById('modalOrderDetails');
+                
+                // Calculate totals for all cart items
+                const cart = this.cartManager.cart;
+                const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+                const totalDiscount = cart.reduce((sum, item) => sum + (item.subtotal * item.discount), 0);
+                const total = cart.reduce((sum, item) => sum + item.total, 0);
+                
+                // Fill order details in modal
+                let orderDetailsHtml = '';
+                cart.forEach(item => {
+                    orderDetailsHtml += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                            <div>
+                                <strong>${item.typeName}</strong><br>
+                                <small>${item.colorName} - ${item.size} cm - ${item.quantity} adet</small>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong>${item.total.toFixed(0)}₺</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                orderDetailsHtml += `
+                    <div style="border-top: 1px solid #e9ecef; padding-top: 12px; margin-top: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Ara Toplam:</span>
+                            <span>${subtotal.toFixed(0)}₺</span>
+                        </div>
+                        ${totalDiscount > 0 ? `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>İndirim:</span>
+                                <span style="color: #FF6000;">-${totalDiscount.toFixed(0)}₺</span>
+                            </div>
+                        ` : ''}
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Kargo:</span>
+                            <span style="color: #FF6000;">Ücretsiz</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 1.1em; border-top: 1px solid #e9ecef; padding-top: 8px;">
+                            <span>Toplam:</span>
+                            <span style="color: #FF6000;">${total.toFixed(0)}₺</span>
+                        </div>
+                    </div>
+                `;
+                
+                modalOrderDetails.innerHTML = orderDetailsHtml;
+                
+                // Store cart for later use
+                window.currentCart = cart;
+                
+                // Show modal
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                const bgColor = type === 'success' ? '#FF6000' : type === 'info' ? '#17a2b8' : '#dc3545';
+                
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${bgColor};
+                    color: #ffffff;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                    z-index: 1000;
+                    font-weight: bold;
+                    animation: slideInRight 0.3s ease;
+                `;
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // Cart Order Modal Controller
+        class CartOrderModalController {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupModalEvents();
+            }
+
+            setupModalEvents() {
+                const modal = document.getElementById('orderModal');
+                const closeModal = document.getElementById('closeModal');
+                const cancelOrder = document.getElementById('cancelOrder');
+                const orderForm = document.getElementById('orderForm');
+
+                // Close modal events
+                [closeModal, cancelOrder].forEach(element => {
+                    if (element) {
+                        element.addEventListener('click', () => this.closeModal());
+                    }
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        this.closeModal();
+                    }
+                });
+
+                // Handle form submission
+                if (orderForm) {
+                    orderForm.addEventListener('submit', (e) => this.handleOrderSubmit(e));
+                }
+            }
+
+            closeModal() {
+                const modal = document.getElementById('orderModal');
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+                
+                // Clear form
+                const form = document.getElementById('orderForm');
+                if (form) form.reset();
+            }
+
+            async handleOrderSubmit(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const cart = window.currentCart;
+                
+                if (!cart || cart.length === 0) {
+                    alert('Sepetinizde ürün bulunmuyor.');
+                    return;
+                }
+
+                // Prepare order data for multiple items
+                const orderData = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    phone: formData.get('phone'),
+                    email: formData.get('email'),
+                    address: formData.get('address'),
+                    cartItems: cart,
+                    totalAmount: cart.reduce((sum, item) => sum + item.total, 0)
+                };
+
+                try {
+                    // Show loading state
+                    const submitBtn = e.target.querySelector('.btn-submit');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Gönderiliyor...';
+                    submitBtn.disabled = true;
+
+                    // Send to real backend API
+                    const response = await fetch('api/orders.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(orderData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Clear cart after successful order
+                        window.cartPage.cartManager.clearCart();
+                        
+                        // Show detailed success message
+                        alert(`🎉 Siparişiniz başarıyla alındı!
+                        
+📋 Sipariş Numarası: ${result.orders ? result.orders[0].order_number : 'GOP-' + Date.now()}
+💰 Toplam Tutar: ${orderData.totalAmount.toFixed(0)}₺
+📞 İletişim: 0533 364 86 24
+📧 Email: info@gopaktr.com
+
+En kısa sürede sizinle iletişime geçeceğiz.`);
+                        
+                        this.closeModal();
+                        
+                        // Redirect to thank you page or refresh cart
+                        window.cartPage.renderCart();
+                    } else {
+                        alert(result.message || 'Sipariş gönderilemedi. Lütfen tekrar deneyiniz.');
+                    }
+                } catch (error) {
+                    console.error('Order submission error:', error);
+                    alert('Bağlantı hatası: ' + error.message + '\n\nLütfen internet bağlantınızı kontrol edin ve tekrar deneyiniz.');
+                } finally {
+                    // Reset button state
+                    const submitBtn = e.target.querySelector('.btn-submit');
+                    submitBtn.textContent = 'Siparişi Tamamla';
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+
+        // Initialize cart page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.cartPage = new CartPage();
+            window.cartOrderModalController = new CartOrderModalController();
+        });
+    </script>
+</body>
+</html>
