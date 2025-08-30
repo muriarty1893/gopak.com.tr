@@ -55,8 +55,9 @@ function deploySite() {
     $output = [];
     $returnCode = 0;
     
-    // Git pull komutu
-    exec('cd /home/user/public_html && git pull origin main 2>&1', $output, $returnCode);
+    // Git pull komutu - Hostinger için güncellenmiş path
+    $gitPath = '/home/u144576298/public_html'; // Hostinger SSH key'den alınan path
+    exec("cd $gitPath && git pull origin main 2>&1", $output, $returnCode);
     
     // Sonucu log'a yaz
     $logMessage = date('Y-m-d H:i:s') . " - Git pull result: " . implode("\n", $output) . "\n";
