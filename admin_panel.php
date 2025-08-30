@@ -204,10 +204,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         .status-delivered { background: #d1e7dd; color: #0f5132; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         
-        .status-new { background: #fff3cd; color: #856404; }
-        .status-read { background: #d1ecf1; color: #0c5460; }
-        .status-replied { background: #d4edda; color: #155724; }
-        
         .modal {
             display: none;
             position: fixed;
@@ -468,7 +464,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <button class="nav-btn" data-section="orders">📋 Siparişler</button>
                 <button class="nav-btn" data-section="customers">👥 Müşteriler</button>
                 <button class="nav-btn" data-section="products">🛍️ Ürünler</button>
-                <button class="nav-btn" data-section="contacts">📧 İletişim</button>
             </div>
             
             <div class="admin-content">
@@ -493,14 +488,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                         <div class="stat-card">
                             <div class="stat-number" id="pendingOrders">-</div>
                             <div class="stat-label">Bekleyen Sipariş</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalContacts">-</div>
-                            <div class="stat-label">Toplam İletişim</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="newContacts">-</div>
-                            <div class="stat-label">Yeni Mesajlar</div>
                         </div>
                     </div>
                     <div id="dashboardContent">
@@ -536,16 +523,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     </div>
                     <div id="productsContent">
                         <div class="loading">Ürünler yükleniyor...</div>
-                    </div>
-                </div>
-                
-                <!-- Contacts Section -->
-                <div id="contacts" class="content-section">
-                    <div class="section-header">
-                        <h2 class="section-title">📧 İletişim Mesajları</h2>
-                    </div>
-                    <div id="contactsContent">
-                        <div class="loading">İletişim mesajları yükleniyor...</div>
                     </div>
                 </div>
             </div>
@@ -665,19 +642,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             </div>
         </div>
     </div>
-    
-    <!-- Contact Message Details Modal -->
-    <div id="contactDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">İletişim Mesajı Detayları</h3>
-                <span class="close" onclick="closeModal('contactDetailsModal')">&times;</span>
-            </div>
-            <div id="contactDetailsContent">
-                <div class="loading">Mesaj detayları yükleniyor...</div>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Global variables
@@ -685,7 +649,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         let orders = [];
         let customers = [];
         let products = [];
-        let contacts = [];
         
         // Logout function
         async function logout() {
@@ -744,70 +707,32 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 case 'products':
                     loadProducts();
                     break;
-                case 'contacts':
-                    loadContacts();
-                    break;
             }
         }
         
         // Dashboard
         async function loadDashboard() {
             try {
-                // Her API'yi ayrı ayrı çağır ve hataları yakala
-                let orders = [];
-                let customers = [];
-                let products = [];
-                let contacts = [];
+                const [ordersRes, customersRes, productsRes] = await Promise.all([
+                    fetch('api/admin_orders.php'),
+                    fetch('api/admin_customers.php'),
+                    fetch('api/admin_products.php')
+                ]);
                 
-                try {
-                    const ordersRes = await fetch('api/admin_orders.php');
-                    if (ordersRes.ok) {
-                        const ordersData = await ordersRes.json();
-                        orders = ordersData.orders || [];
-                    }
-                } catch (e) {
-                    console.warn('Siparişler yüklenemedi:', e);
+                if (ordersRes.ok && customersRes.ok && productsRes.ok) {
+                    const ordersData = await ordersRes.json();
+                    const customersData = await customersRes.json();
+                    const productsData = await productsRes.json();
+                    
+                    orders = ordersData.orders || [];
+                    customers = customersData.customers || [];
+                    products = productsData.products || [];
+                    
+                    updateDashboardStats();
+                    displayRecentOrders();
+                } else {
+                    throw new Error('API yanıtları başarısız');
                 }
-                
-                try {
-                    const customersRes = await fetch('api/admin_customers.php');
-                    if (customersRes.ok) {
-                        const customersData = await customersRes.json();
-                        customers = customersData.customers || [];
-                    }
-                } catch (e) {
-                    console.warn('Müşteriler yüklenemedi:', e);
-                }
-                
-                try {
-                    const productsRes = await fetch('api/admin_products.php');
-                    if (productsRes.ok) {
-                        const productsData = await productsRes.json();
-                        products = productsData.products || [];
-                    }
-                } catch (e) {
-                    console.warn('Ürünler yüklenemedi:', e);
-                }
-                
-                try {
-                    const contactsRes = await fetch('api/admin_contacts.php');
-                    if (contactsRes.ok) {
-                        const contactsData = await contactsRes.json();
-                        contacts = contactsData.messages || [];
-                    }
-                } catch (e) {
-                    console.warn('İletişim mesajları yüklenemedi:', e);
-                }
-                
-                // Global değişkenleri güncelle
-                window.orders = orders;
-                window.customers = customers;
-                window.products = products;
-                window.contacts = contacts;
-                
-                updateDashboardStats();
-                displayRecentOrders();
-                
             } catch (error) {
                 console.error('Dashboard yükleme hatası:', error);
                 document.getElementById('dashboardContent').innerHTML = `
@@ -819,23 +744,10 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         }
         
         function updateDashboardStats() {
-            try {
-                document.getElementById('totalOrders').textContent = orders?.length || 0;
-                document.getElementById('totalCustomers').textContent = customers?.length || 0;
-                document.getElementById('totalProducts').textContent = products?.length || 0;
-                document.getElementById('pendingOrders').textContent = orders?.filter(o => o.status === 'pending')?.length || 0;
-                document.getElementById('totalContacts').textContent = contacts?.length || 0;
-                document.getElementById('newContacts').textContent = contacts?.filter(c => c.status === 'new')?.length || 0;
-            } catch (error) {
-                console.error('Dashboard stats güncelleme hatası:', error);
-                // Hata durumunda 0 göster
-                document.getElementById('totalOrders').textContent = '0';
-                document.getElementById('totalCustomers').textContent = '0';
-                document.getElementById('totalProducts').textContent = '0';
-                document.getElementById('pendingOrders').textContent = '0';
-                document.getElementById('totalContacts').textContent = '0';
-                document.getElementById('newContacts').textContent = '0';
-            }
+            document.getElementById('totalOrders').textContent = orders.length;
+            document.getElementById('totalCustomers').textContent = customers.length;
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
         }
         
         function displayRecentOrders() {
@@ -1021,79 +933,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                         Ürünler yüklenirken hata oluştu: ${error.message}
                     </div>
                 `;
-                }
-        }
-        
-        // Contacts
-        async function loadContacts() {
-            try {
-                const response = await fetch('api/admin_contacts.php');
-                if (response.ok) {
-                    const data = await response.json();
-                    contacts = data.messages || [];
-                    displayContacts();
-                } else {
-                    // API yanıt vermedi, boş liste göster
-                    contacts = [];
-                    displayContacts();
-                }
-            } catch (error) {
-                console.error('İletişim yükleme hatası:', error);
-                // Hata durumunda boş liste göster
-                contacts = [];
-                displayContacts();
             }
-        }
-        
-        function displayContacts() {
-            if (contacts.length === 0) {
-                document.getElementById('contactsContent').innerHTML = `
-                    <div class="no-orders">
-                        <p>Henüz iletişim mesajı bulunmuyor.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const contactsHtml = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Ad Soyad</th>
-                            <th>E-posta</th>
-                            <th>Telefon</th>
-                            <th>Durum</th>
-                            <th>Tarih</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${contacts.map(contact => `
-                            <tr>
-                                <td>${contact.id}</td>
-                                <td>${contact.name}</td>
-                                <td>${contact.email}</td>
-                                <td>${contact.phone || '-'}</td>
-                                <td>
-                                    <span class="status-badge status-${contact.status}">
-                                        ${getContactStatusText(contact.status)}
-                                    </span>
-                                </td>
-                                <td>${new Date(contact.created_at).toLocaleDateString('tr-TR')}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn-edit" onclick="viewContactDetails(${contact.id})">Görüntüle</button>
-                                        <button class="btn-delete" onclick="deleteContact(${contact.id})">Sil</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            document.getElementById('contactsContent').innerHTML = contactsHtml;
         }
         
         function displayProducts() {
@@ -1141,105 +981,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             `;
             
             document.getElementById('productsContent').innerHTML = productsHtml;
-        }
-        
-        // Contact Management
-        function viewContactDetails(contactId) {
-            const contact = contacts.find(c => c.id === contactId);
-            if (!contact) return;
-            
-            const detailsHtml = `
-                <div style="margin-bottom: 20px;">
-                    <h4>Mesaj Bilgileri</h4>
-                    <p><strong>ID:</strong> ${contact.id}</p>
-                    <p><strong>Durum:</strong> <span class="status-badge status-${contact.status}">${getContactStatusText(contact.status)}</span></p>
-                    <p><strong>Tarih:</strong> ${new Date(contact.created_at).toLocaleString('tr-TR')}</p>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <h4>Gönderen Bilgileri</h4>
-                    <p><strong>Ad Soyad:</strong> ${contact.name}</p>
-                    <p><strong>E-posta:</strong> ${contact.email}</p>
-                    <p><strong>Telefon:</strong> ${contact.phone || 'Belirtilmemiş'}</p>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <h4>Mesaj İçeriği</h4>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef;">
-                        ${contact.message.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <h4>Durum Güncelle</h4>
-                    <select id="contactStatusSelect" style="padding: 8px; margin-right: 10px;">
-                        <option value="new" ${contact.status === 'new' ? 'selected' : ''}>Yeni</option>
-                        <option value="read" ${contact.status === 'read' ? 'selected' : ''}>Okundu</option>
-                        <option value="replied" ${contact.status === 'replied' ? 'selected' : ''}>Yanıtlandı</option>
-                    </select>
-                    <button class="btn-primary" onclick="updateContactStatus(${contact.id})">Güncelle</button>
-                </div>
-            `;
-            
-            document.getElementById('contactDetailsContent').innerHTML = detailsHtml;
-            document.getElementById('contactDetailsModal').style.display = 'block';
-        }
-        
-        async function updateContactStatus(contactId) {
-            const newStatus = document.getElementById('contactStatusSelect').value;
-            
-            try {
-                const response = await fetch(`api/admin_contacts.php?id=${contactId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Mesaj durumu başarıyla güncellendi!');
-                        closeModal('contactDetailsModal');
-                        loadContacts();
-                    } else {
-                        alert('Durum güncellenirken hata: ' + result.message);
-                    }
-                } else {
-                    throw new Error('Durum güncellenemedi');
-                }
-            } catch (error) {
-                console.error('Durum güncelleme hatası:', error);
-                alert('Durum güncellenirken hata oluştu: ' + error.message);
-            }
-        }
-        
-        async function deleteContact(contactId) {
-            if (!confirm('Bu mesajı silmek istediğinizden emin misiniz?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`api/admin_contacts.php?id=${contactId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Mesaj başarıyla silindi!');
-                        loadContacts();
-                    } else {
-                        alert('Mesaj silinirken hata: ' + result.message);
-                    }
-                } else {
-                    throw new Error('Mesaj silinemedi');
-                }
-            } catch (error) {
-                console.error('Mesaj silme hatası:', error);
-                alert('Mesaj silinirken hata oluştu: ' + error.message);
-            }
         }
         
         // Product Management
@@ -1489,15 +1230,6 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 'shipped': 'Kargoda',
                 'delivered': 'Teslim Edildi',
                 'cancelled': 'İptal Edildi'
-            };
-            return statusMap[status] || status;
-        }
-        
-        function getContactStatusText(status) {
-            const statusMap = {
-                'new': 'Yeni',
-                'read': 'Okundu',
-                'replied': 'Yanıtlandı'
             };
             return statusMap[status] || status;
         }
