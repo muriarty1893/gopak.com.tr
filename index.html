@@ -609,7 +609,7 @@
             <h3>Bize Ulaşın</h3>
             <p>Sorularınız ve önerileriniz için bizimle iletişime geçin.</p>
             
-            <form>
+            <form id="contactForm">
               <div class="form-group">
                 <input type="text" name="name" placeholder="Adınız Soyadınız" required>
               </div>
@@ -624,6 +624,8 @@
               </div>
               <button type="submit" class="submit-btn">Mesaj Gönder</button>
             </form>
+            
+            <div id="contactMessage" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
             
             <div class="contact-items" style="margin-top: 20px;">
               <div class="contact-item">
@@ -687,5 +689,57 @@
     </div>
 
     <script src="app.js?v=2.0"></script>
+    
+    <script>
+        // Contact form functionality
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('.submit-btn');
+            const messageDiv = document.getElementById('contactMessage');
+            
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Gönderiliyor...';
+            
+            try {
+                const response = await fetch('api/contact.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.backgroundColor = '#d4edda';
+                    messageDiv.style.color = '#155724';
+                    messageDiv.style.border = '1px solid #c3e6cb';
+                    messageDiv.textContent = result.message;
+                    
+                    // Reset form
+                    this.reset();
+                } else {
+                    throw new Error(result.error || 'Bir hata oluştu');
+                }
+            } catch (error) {
+                messageDiv.style.display = 'block';
+                messageDiv.style.backgroundColor = '#f8d7da';
+                messageDiv.style.color = '#721c24';
+                messageDiv.style.border = '1px solid #f5c6cb';
+                messageDiv.textContent = 'Mesaj gönderilemedi: ' + error.message;
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Mesaj Gönder';
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
 </body>
 </html>
