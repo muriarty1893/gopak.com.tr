@@ -753,29 +753,61 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         // Dashboard
         async function loadDashboard() {
             try {
-                const [ordersRes, customersRes, productsRes, contactsRes] = await Promise.all([
-                    fetch('api/admin_orders.php'),
-                    fetch('api/admin_customers.php'),
-                    fetch('api/admin_products.php'),
-                    fetch('api/admin_contacts.php')
-                ]);
+                // Her API'yi ayrı ayrı çağır ve hataları yakala
+                let orders = [];
+                let customers = [];
+                let products = [];
+                let contacts = [];
                 
-                if (ordersRes.ok && customersRes.ok && productsRes.ok && contactsRes.ok) {
-                    const ordersData = await ordersRes.json();
-                    const customersData = await customersRes.json();
-                    const productsData = await productsRes.json();
-                    const contactsData = await contactsRes.json();
-                    
-                    orders = ordersData.orders || [];
-                    customers = customersData.customers || [];
-                    products = productsData.products || [];
-                    contacts = contactsData.messages || [];
-                    
-                    updateDashboardStats();
-                    displayRecentOrders();
-                } else {
-                    throw new Error('API yanıtları başarısız');
+                try {
+                    const ordersRes = await fetch('api/admin_orders.php');
+                    if (ordersRes.ok) {
+                        const ordersData = await ordersRes.json();
+                        orders = ordersData.orders || [];
+                    }
+                } catch (e) {
+                    console.warn('Siparişler yüklenemedi:', e);
                 }
+                
+                try {
+                    const customersRes = await fetch('api/admin_customers.php');
+                    if (customersRes.ok) {
+                        const customersData = await customersRes.json();
+                        customers = customersData.customers || [];
+                    }
+                } catch (e) {
+                    console.warn('Müşteriler yüklenemedi:', e);
+                }
+                
+                try {
+                    const productsRes = await fetch('api/admin_products.php');
+                    if (productsRes.ok) {
+                        const productsData = await productsRes.json();
+                        products = productsData.products || [];
+                    }
+                } catch (e) {
+                    console.warn('Ürünler yüklenemedi:', e);
+                }
+                
+                try {
+                    const contactsRes = await fetch('api/admin_contacts.php');
+                    if (contactsRes.ok) {
+                        const contactsData = await contactsRes.json();
+                        contacts = contactsData.messages || [];
+                    }
+                } catch (e) {
+                    console.warn('İletişim mesajları yüklenemedi:', e);
+                }
+                
+                // Global değişkenleri güncelle
+                window.orders = orders;
+                window.customers = customers;
+                window.products = products;
+                window.contacts = contacts;
+                
+                updateDashboardStats();
+                displayRecentOrders();
+                
             } catch (error) {
                 console.error('Dashboard yükleme hatası:', error);
                 document.getElementById('dashboardContent').innerHTML = `
@@ -787,12 +819,23 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         }
         
         function updateDashboardStats() {
-            document.getElementById('totalOrders').textContent = orders.length;
-            document.getElementById('totalCustomers').textContent = customers.length;
-            document.getElementById('totalProducts').textContent = products.length;
-            document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
-            document.getElementById('totalContacts').textContent = contacts.length;
-            document.getElementById('newContacts').textContent = contacts.filter(c => c.status === 'new').length;
+            try {
+                document.getElementById('totalOrders').textContent = orders?.length || 0;
+                document.getElementById('totalCustomers').textContent = customers?.length || 0;
+                document.getElementById('totalProducts').textContent = products?.length || 0;
+                document.getElementById('pendingOrders').textContent = orders?.filter(o => o.status === 'pending')?.length || 0;
+                document.getElementById('totalContacts').textContent = contacts?.length || 0;
+                document.getElementById('newContacts').textContent = contacts?.filter(c => c.status === 'new')?.length || 0;
+            } catch (error) {
+                console.error('Dashboard stats güncelleme hatası:', error);
+                // Hata durumunda 0 göster
+                document.getElementById('totalOrders').textContent = '0';
+                document.getElementById('totalCustomers').textContent = '0';
+                document.getElementById('totalProducts').textContent = '0';
+                document.getElementById('pendingOrders').textContent = '0';
+                document.getElementById('totalContacts').textContent = '0';
+                document.getElementById('newContacts').textContent = '0';
+            }
         }
         
         function displayRecentOrders() {
@@ -990,15 +1033,15 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     contacts = data.messages || [];
                     displayContacts();
                 } else {
-                    throw new Error('İletişim mesajları yüklenemedi');
+                    // API yanıt vermedi, boş liste göster
+                    contacts = [];
+                    displayContacts();
                 }
             } catch (error) {
                 console.error('İletişim yükleme hatası:', error);
-                document.getElementById('contactsContent').innerHTML = `
-                    <div class="error-message">
-                        İletişim mesajları yüklenirken hata oluştu: ${error.message}
-                    </div>
-                `;
+                // Hata durumunda boş liste göster
+                contacts = [];
+                displayContacts();
             }
         }
         
