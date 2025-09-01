@@ -105,128 +105,58 @@
             <div class="config-group">
               <h3>Çanta Tipi</h3>
               <div class="type-selector">
-                <div class="type-option active" data-type="unprinted" data-price="2.5">
+                <div class="type-option active" data-type="3D" data-category="3D Çanta (Yan Körüklü)">
                   <div class="type-icon">📦</div>
-                  <h4>Baskısız Çanta</h4>
-                  <p>Sade ve temiz görünüm</p>
-                  <span class="type-price">2.50₺/adet</span>
+                  <h4>3D Çanta (Yan Körüklü)</h4>
+                  <p>Pastane ve tatlıcılar için uygun</p>
+                  <span class="type-description">Yan körüklü yapı ile daha fazla hacim</span>
                 </div>
-                <div class="type-option" data-type="printed" data-price="4.0">
-                  <div class="type-icon">🎨</div>
-                  <h4>Baskılı Çanta</h4>
-                  <p>Logo ve özel baskı</p>
-                  <span class="type-price">4.00₺/adet</span>
+                <div class="type-option" data-type="Düz" data-category="Düz Çanta (Yan Körüksüz)">
+                  <div class="type-icon">👜</div>
+                  <h4>Düz Çanta (Yan Körüksüz)</h4>
+                  <p>Giyim markaları ve kırtasiyeler için uygun</p>
+                  <span class="type-description">Düz yapı ile şık görünüm</span>
                 </div>
               </div>
             </div>
 
-            <!-- Color Selection -->
+            <!-- Fabric Selection -->
             <div class="config-group">
-              <h3>Renk Seçimi</h3>
-              <div class="color-selector">
-                <div class="color-option active" data-color="white" data-name="Beyaz">
-                  <div class="color-circle" style="background: #ffffff; border: 2px solid #ddd;"></div>
-                  <span>Beyaz</span>
+              <h3>Kumaş Seçimi</h3>
+              <div class="fabric-selector">
+                <div class="fabric-option active" data-fabric="standard" data-name="Standart Kumaş">
+                  <div class="fabric-icon">🧵</div>
+                  <span>Standart Kumaş</span>
+                  <small>Kaliteli nonwoven malzeme</small>
                 </div>
-                <div class="color-option" data-color="black" data-name="Siyah">
-                  <div class="color-circle" style="background: #000000;"></div>
-                  <span>Siyah</span>
-                </div>
-                <div class="color-option" data-color="red" data-name="Kırmızı">
-                  <div class="color-circle" style="background: #e74c3c;"></div>
-                  <span>Kırmızı</span>
-                </div>
-                <div class="color-option" data-color="blue" data-name="Mavi">
-                  <div class="color-circle" style="background: #3498db;"></div>
-                  <span>Mavi</span>
-                </div>
-                <div class="color-option" data-color="green" data-name="Yeşil">
-                  <div class="color-circle" style="background: #27ae60;"></div>
-                  <span>Yeşil</span>
-                </div>
-                <div class="color-option custom-color-option" data-color="custom" data-name="Özel Renk">
-                  <div class="color-circle custom-color-circle">
-                    <span class="color-picker-icon">🎨</span>
-                  </div>
-                  <span>Özel Renk</span>
-                  <input type="color" id="customColorPicker" class="hidden-color-picker" value="#f1c40f">
+                <div class="fabric-option" data-fabric="premium" data-name="Premium Kumaş">
+                  <div class="fabric-icon">✨</div>
+                  <span>Premium Kumaş</span>
+                  <small>Daha kalın ve dayanıklı</small>
                 </div>
               </div>
             </div>
 
             <!-- Size Selection with Card Slider -->
             <div class="config-group">
-              <h3>Boy Seçimi</h3>
+              <h3>Boyut Seçimi</h3>
+              <div class="size-loading" id="sizeLoading">
+                <div class="loading-spinner"></div>
+                <p>Boyutlar yükleniyor...</p>
+              </div>
+              
               <!-- Desktop Card Slider -->
-              <div class="size-slider-wrapper desktop-only">
-                <div class="size-slider">
-                  <div class="size-card active" data-size="30x40" data-multiplier="1.0">
-                    <h4>30 x 40 cm</h4>
-                    <p>Küçük Boy</p>
-                    <div class="size-features">
-                      <span class="feature-item">• Ekonomik seçim</span>
-                      <span class="feature-item">• Günlük kullanım</span>
-                      <span class="feature-item">• Hafif eşyalar</span>
-                    </div>
-                    <span class="size-price">Standart Fiyat</span>
-                  </div>
-                  <div class="size-card" data-size="35x45" data-multiplier="1.2">
-                    <h4>35 x 45 cm</h4>
-                    <p>Orta Boy</p>
-                    <div class="size-features">
-                      <span class="feature-item">• Popüler boyut</span>
-                      <span class="feature-item">• Market alışverişi</span>
-                      <span class="feature-item">• Orta hacim</span>
-                    </div>
-                    <span class="size-price">+20% Fiyat</span>
-                  </div>
-                  <div class="size-card" data-size="40x50" data-multiplier="1.4">
-                    <h4>40 x 50 cm</h4>
-                    <p>Büyük Boy</p>
-                    <div class="size-features">
-                      <span class="feature-item">• Ağır yükler</span>
-                      <span class="feature-item">• Toplu alışveriş</span>
-                      <span class="feature-item">• Dayanıklı yapı</span>
-                    </div>
-                    <span class="size-price">+40% Fiyat</span>
-                  </div>
-                  <div class="size-card" data-size="50x60" data-multiplier="1.8">
-                    <h4>50 x 60 cm</h4>
-                    <p>Extra Büyük</p>
-                    <div class="size-features">
-                      <span class="feature-item">• Maksimum kapasite</span>
-                      <span class="feature-item">• Toptan alışveriş</span>
-                      <span class="feature-item">• Premium kalite</span>
-                    </div>
-                    <span class="size-price">+80% Fiyat</span>
-                  </div>
-                  <button class="size-prev">‹</button>
-                  <button class="size-next">›</button>
+              <div class="size-slider-wrapper desktop-only" id="sizeSliderWrapper" style="display: none;">
+                <div class="size-slider" id="sizeSlider">
+                  <!-- Boyutlar dinamik olarak yüklenecek -->
                 </div>
+                <button class="size-prev">‹</button>
+                <button class="size-next">›</button>
               </div>
               
               <!-- Mobile Size Buttons -->
-              <div class="mobile-size-buttons mobile-only">
-                <button class="size-btn active" data-size="30x40" data-multiplier="1.0">
-                  <span class="size-title">30 x 40 cm</span>
-                  <span class="size-subtitle">Küçük Boy</span>
-                  <span class="size-price-mobile">Standart Fiyat</span>
-                </button>
-                <button class="size-btn" data-size="35x45" data-multiplier="1.2">
-                  <span class="size-title">35 x 45 cm</span>
-                  <span class="size-subtitle">Orta Boy</span>
-                  <span class="size-price-mobile">+20% Fiyat</span>
-                </button>
-                <button class="size-btn" data-size="40x50" data-multiplier="1.4">
-                  <span class="size-title">40 x 50 cm</span>
-                  <span class="size-subtitle">Büyük Boy</span>
-                  <span class="size-price-mobile">+40% Fiyat</span>
-                </button>
-                <button class="size-btn" data-size="50x60" data-multiplier="1.8">
-                  <span class="size-title">50 x 60 cm</span>
-                  <span class="size-subtitle">Extra Büyük</span>
-                  <span class="size-price-mobile">+80% Fiyat</span>
-                </button>
+              <div class="mobile-size-buttons mobile-only" id="mobileSizeButtons" style="display: none;">
+                <!-- Mobil boyutlar dinamik olarak yüklenecek -->
               </div>
             </div>
 
@@ -235,13 +165,14 @@
               <h3>Adet Seçimi</h3>
               <div class="quantity-selector">
                 <button class="qty-btn minus">-</button>
-                <input type="number" id="quantity" value="100" min="50" max="10000" step="50">
+                <input type="number" id="quantity" value="2500" min="1000" max="50000" step="100">
                 <button class="qty-btn plus">+</button>
-                <div class="qty-presets">
-                  <button class="qty-preset" data-qty="100">100</button>
-                  <button class="qty-preset" data-qty="250">250</button>
-                  <button class="qty-preset" data-qty="500">500</button>
-                  <button class="qty-preset" data-qty="1000">1000</button>
+                <div class="min-quantity-warning" id="minQuantityWarning" style="display: none;">
+                  <span class="warning-icon">⚠️</span>
+                  <span class="warning-text">Bu boyut için minimum sipariş miktarı: <strong id="minQuantityText">2500</strong> adet</span>
+                </div>
+                <div class="qty-presets" id="qtyPresets">
+                  <!-- Preset butonları dinamik olarak yüklenecek -->
                 </div>
               </div>
             </div>
@@ -254,36 +185,38 @@
             <div class="summary-card">
               <div class="product-preview">
                 <div class="preview-details">
-                  <h4 id="selectedType">Baskısız Çanta</h4>
-                  <p id="selectedSpecs">Beyaz - 30x40 cm</p>
+                  <h4 id="selectedType">3D Çanta (Yan Körüklü)</h4>
+                  <p id="selectedSpecs">Standart Kumaş - Boyut seçiniz</p>
+                  <p id="selectedDescription">Pastane ve tatlıcılar için uygun</p>
                 </div>
               </div>
               
               <div class="price-breakdown">
                 <div class="price-row">
                   <span>Birim Fiyat:</span>
-                  <span id="unitPrice">2.50₺</span>
+                  <span id="unitPrice">--</span>
                 </div>
                 <div class="price-row">
                   <span>Adet:</span>
-                  <span id="totalQty">100</span>
+                  <span id="totalQty">2500</span>
                 </div>
                 <div class="price-row">
-                  <span>Boy Çarpanı:</span>
-                  <span id="sizeMultiplier">x1.0</span>
+                  <span>Kumaş Tipi:</span>
+                  <span id="fabricType">Standart</span>
                 </div>
                 <div class="price-row total">
                   <span>Toplam Tutar:</span>
-                  <span id="totalPrice">250₺</span>
+                  <span id="totalPrice">--</span>
                 </div>
               </div>
 
               <div class="discount-info">
-                <p>📦 500+ adet siparişlerde %10 indirim</p>
+                <p>📦 5000+ adet siparişlerde %15 indirim</p>
                 <p>🚚 Tüm siparişlerde ücretsiz kargo</p>
+                <p>⚡ Hızlı üretim ve teslimat</p>
               </div>
 
-              <button class="add-to-cart-btn">Sepete Ekle</button>
+              <button class="add-to-cart-btn" id="addToCartBtn" disabled>Boyut Seçiniz</button>
             </div>
           </div>
 

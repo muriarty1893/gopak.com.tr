@@ -139,8 +139,8 @@ try {
         INSERT INTO orders (
             order_number, customer_id, product_type, product_color, product_size, 
             quantity, unit_price, size_multiplier, subtotal, discount, total, 
-            status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+            bag_type, bag_dimensions, min_quantity_met, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
     
     $orderIds = [];
@@ -150,18 +150,34 @@ try {
         // Generate unique order number for each item
         $orderNumber = 'GOP-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT) . '-' . ($index + 1);
         
+        // Çanta ürünü kontrolü
+        $isBagProduct = false;
+        $bagType = null;
+        $bagDimensions = null;
+        $minQuantityMet = false;
+        
+        if (isset($cartItem['bagType']) && $cartItem['bagType']) {
+            $isBagProduct = true;
+            $bagType = $cartItem['bagType'];
+            $bagDimensions = $cartItem['bagDimensions'] ?? null;
+            $minQuantityMet = isset($cartItem['minQuantity']) && $cartItem['quantity'] >= $cartItem['minQuantity'];
+        }
+        
         $orderStmt->execute([
             $orderNumber,
             $customerId,
             $cartItem['typeName'],
-            $cartItem['colorName'],
+            $cartItem['colorName'] ?? 'Standart',
             $cartItem['size'],
             $cartItem['quantity'],
             $cartItem['unitPrice'],
-            $cartItem['sizeMultiplier'],
+            $cartItem['sizeMultiplier'] ?? 1.0,
             $cartItem['subtotal'],
-            $cartItem['discount'],
-            $cartItem['total']
+            $cartItem['discount'] ?? 0,
+            $cartItem['total'],
+            $bagType,
+            $bagDimensions,
+            $minQuantityMet
         ]);
         
         $orderIds[] = [

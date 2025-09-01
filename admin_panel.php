@@ -559,7 +559,28 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                         <option value="Standart">Standart</option>
                         <option value="Özel">Özel</option>
                         <option value="Premium">Premium</option>
+                        <option value="Çanta">Çanta</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="productBagType">Çanta Tipi</label>
+                    <select id="productBagType" name="bag_type">
+                        <option value="">Çanta değil</option>
+                        <option value="3D Çanta (Yan Körüklü)">3D Çanta (Yan Körüklü)</option>
+                        <option value="Düz Çanta (Yan Körüksüz)">Düz Çanta (Yan Körüksüz)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productBagDimensions">Çanta Boyutları</label>
+                    <input type="text" id="productBagDimensions" name="bag_dimensions" placeholder="örn: 30 × 25 × 10">
+                </div>
+                <div class="form-group">
+                    <label for="productMinOrderQuantity">Minimum Sipariş Miktarı</label>
+                    <input type="number" id="productMinOrderQuantity" name="min_order_quantity" min="0" placeholder="örn: 2500">
+                </div>
+                <div class="form-group">
+                    <label for="productBagDescription">Çanta Açıklaması</label>
+                    <textarea id="productBagDescription" name="bag_description" placeholder="örn: Pastane ve tatlıcılar için uygun"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="productImage">Resim URL</label>
@@ -610,7 +631,28 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                         <option value="Standart">Standart</option>
                         <option value="Özel">Özel</option>
                         <option value="Premium">Premium</option>
+                        <option value="Çanta">Çanta</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="editProductBagType">Çanta Tipi</label>
+                    <select id="editProductBagType" name="bag_type">
+                        <option value="">Çanta değil</option>
+                        <option value="3D Çanta (Yan Körüklü)">3D Çanta (Yan Körüklü)</option>
+                        <option value="Düz Çanta (Yan Körüksüz)">Düz Çanta (Yan Körüksüz)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editProductBagDimensions">Çanta Boyutları</label>
+                    <input type="text" id="editProductBagDimensions" name="bag_dimensions" placeholder="örn: 30 × 25 × 10">
+                </div>
+                <div class="form-group">
+                    <label for="editProductMinOrderQuantity">Minimum Sipariş Miktarı</label>
+                    <input type="number" id="editProductMinOrderQuantity" name="min_order_quantity" min="0" placeholder="örn: 2500">
+                </div>
+                <div class="form-group">
+                    <label for="editProductBagDescription">Çanta Açıklaması</label>
+                    <textarea id="editProductBagDescription" name="bag_description" placeholder="örn: Pastane ve tatlıcılar için uygun"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="editProductImage">Resim URL</label>
@@ -953,6 +995,9 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                             <th>ID</th>
                             <th>Ad</th>
                             <th>Kategori</th>
+                            <th>Çanta Tipi</th>
+                            <th>Boyutlar</th>
+                            <th>Min. Sipariş</th>
                             <th>Fiyat</th>
                             <th>Stok</th>
                             <th>Özel</th>
@@ -965,6 +1010,9 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                                 <td>${product.id}</td>
                                 <td>${product.name}</td>
                                 <td>${product.category}</td>
+                                <td>${product.bag_type || '-'}</td>
+                                <td>${product.bag_dimensions || '-'}</td>
+                                <td>${product.min_order_quantity ? product.min_order_quantity.toLocaleString() : '-'}</td>
                                 <td>${product.price}₺</td>
                                 <td>${product.stock_quantity}</td>
                                 <td>${product.is_custom ? 'Evet' : 'Hayır'}</td>
@@ -1038,6 +1086,10 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             document.getElementById('editProductPrice').value = product.price;
             document.getElementById('editProductStock').value = product.stock_quantity;
             document.getElementById('editProductCategory').value = product.category;
+            document.getElementById('editProductBagType').value = product.bag_type || '';
+            document.getElementById('editProductBagDimensions').value = product.bag_dimensions || '';
+            document.getElementById('editProductMinOrderQuantity').value = product.min_order_quantity || '';
+            document.getElementById('editProductBagDescription').value = product.bag_description || '';
             document.getElementById('editProductImage').value = product.image_url || '';
             document.getElementById('editProductCustom').checked = product.is_custom;
             

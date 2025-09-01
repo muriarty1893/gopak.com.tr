@@ -25,15 +25,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 image_url, 
                 category, 
                 is_custom,
+                bag_type,
+                bag_dimensions,
+                min_order_quantity,
+                bag_description,
                 created_at,
                 updated_at
             FROM products 
             ORDER BY 
                 CASE 
-                    WHEN category = 'Standart' THEN 1
-                    WHEN category = 'Özel' THEN 2 
-                    WHEN category = 'Premium' THEN 3
-                    ELSE 4
+                    WHEN bag_type = '3D Çanta (Yan Körüklü)' THEN 1
+                    WHEN bag_type = 'Düz Çanta (Yan Körüksüz)' THEN 2
+                    WHEN category = 'Standart' THEN 3
+                    WHEN category = 'Özel' THEN 4 
+                    WHEN category = 'Premium' THEN 5
+                    ELSE 6
                 END,
                 name ASC
         ");
@@ -106,8 +112,9 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("
             INSERT INTO products (
                 name, description, price, stock_quantity, 
-                image_url, category, is_custom, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                image_url, category, is_custom, bag_type, bag_dimensions, 
+                min_order_quantity, bag_description, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
         
         $stmt->execute([
@@ -117,7 +124,11 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (int)$data['stock_quantity'],
             $data['image_url'] ?? '',
             $data['category'] ?? 'Standart',
-            isset($data['is_custom']) ? (bool)$data['is_custom'] : false
+            isset($data['is_custom']) ? (bool)$data['is_custom'] : false,
+            $data['bag_type'] ?? null,
+            $data['bag_dimensions'] ?? null,
+            !empty($data['min_order_quantity']) ? (int)$data['min_order_quantity'] : null,
+            $data['bag_description'] ?? null
         ]);
         
         $productId = $pdo->lastInsertId();
@@ -177,6 +188,10 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                 image_url = ?,
                 category = ?,
                 is_custom = ?,
+                bag_type = ?,
+                bag_dimensions = ?,
+                min_order_quantity = ?,
+                bag_description = ?,
                 updated_at = NOW()
             WHERE id = ?
         ");
@@ -189,6 +204,10 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             $data['image_url'] ?? '',
             $data['category'] ?? 'Standart',
             isset($data['is_custom']) ? (bool)$data['is_custom'] : false,
+            $data['bag_type'] ?? null,
+            $data['bag_dimensions'] ?? null,
+            !empty($data['min_order_quantity']) ? (int)$data['min_order_quantity'] : null,
+            $data['bag_description'] ?? null,
             $productId
         ]);
         

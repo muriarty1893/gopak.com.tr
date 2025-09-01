@@ -1100,3 +1100,599 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize mobile size button handler
     window.mobileSizeButtonHandler = new MobileSizeButtonHandler();
 });
+
+// Yeni Çanta Seçenekleri JavaScript Kodu
+class BagConfigurator {
+    constructor() {
+        this.selectedBagType = '3D Çanta (Yan Körüklü)';
+        this.selectedFabric = 'standard';
+        this.selectedSize = null;
+        this.selectedQuantity = 2500;
+        this.bagSizes = [];
+        this.currentPrices = {};
+        
+        this.init();
+    }
+
+    async init() {
+        await this.loadBagSizes();
+        this.setupEventListeners();
+        this.updateUI();
+    }
+
+    async loadBagSizes() {
+        try {
+            const response = await fetch('api/bag_sizes.php');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.bagSizes = data.sizes;
+                this.renderSizes();
+            } else {
+                console.error('Boyutlar yüklenemedi:', data.message);
+            }
+        } catch (error) {
+            console.error('Boyutlar yüklenirken hata:', error);
+            // Fallback: Varsayılan boyutlar
+            this.loadDefaultSizes();
+        }
+    }
+
+    loadDefaultSizes() {
+        this.bagSizes = [
+            // 3D Çanta boyutları
+            {
+                id: 1,
+                category: '3D Çanta (Yan Körüklü)',
+                size_name: 'Küçük Boy',
+                dimensions: '30 × 25 × 10',
+                min_quantity: 2500,
+                base_price: 2.50,
+                description: 'Pastane ve tatlıcılar için uygun'
+            },
+            {
+                id: 2,
+                category: '3D Çanta (Yan Körüklü)',
+                size_name: 'Orta Boy',
+                dimensions: '25 × 20 × 15',
+                min_quantity: 2500,
+                base_price: 3.00,
+                description: 'Pastane ve tatlıcılar için uygun'
+            },
+            {
+                id: 3,
+                category: '3D Çanta (Yan Körüklü)',
+                size_name: 'Büyük Boy',
+                dimensions: '35 × 20 × 25',
+                min_quantity: 1500,
+                base_price: 3.50,
+                description: 'Pastane ve tatlıcılar için uygun'
+            },
+            {
+                id: 4,
+                category: '3D Çanta (Yan Körüklü)',
+                size_name: 'Extra Büyük',
+                dimensions: '35 × 25 × 30',
+                min_quantity: 1500,
+                base_price: 4.00,
+                description: 'Pastane ve tatlıcılar için uygun'
+            },
+            // Düz Çanta boyutları
+            {
+                id: 5,
+                category: 'Düz Çanta (Yan Körüksüz)',
+                size_name: 'Küçük Boy',
+                dimensions: '30 × 40 × 10',
+                min_quantity: 3000,
+                base_price: 2.00,
+                description: 'Giyim markaları ve kırtasiyeler için uygun'
+            },
+            {
+                id: 6,
+                category: 'Düz Çanta (Yan Körüksüz)',
+                size_name: 'Orta Boy',
+                dimensions: '40 × 40 × 10',
+                min_quantity: 2500,
+                base_price: 2.50,
+                description: 'Giyim markaları ve kırtasiyeler için uygun'
+            },
+            {
+                id: 7,
+                category: 'Düz Çanta (Yan Körüksüz)',
+                size_name: 'Büyük Boy',
+                dimensions: '50 × 50 × 10',
+                min_quantity: 2000,
+                base_price: 3.00,
+                description: 'Giyim markaları ve kırtasiyeler için uygun'
+            },
+            {
+                id: 8,
+                category: 'Düz Çanta (Yan Körüksüz)',
+                size_name: 'Extra Büyük',
+                dimensions: '40 × 45',
+                min_quantity: 2500,
+                base_price: 3.50,
+                description: 'Giyim markaları ve kırtasiyeler için uygun'
+            }
+        ];
+        this.renderSizes();
+    }
+
+    renderSizes() {
+        const sizeSlider = document.getElementById('sizeSlider');
+        const mobileSizeButtons = document.getElementById('mobileSizeButtons');
+        const sizeLoading = document.getElementById('sizeLoading');
+        const sizeSliderWrapper = document.getElementById('sizeSliderWrapper');
+
+        if (!sizeSlider || !mobileSizeButtons) return;
+
+        // Loading'i gizle
+        if (sizeLoading) sizeLoading.classList.add('hidden');
+        if (sizeSliderWrapper) sizeSliderWrapper.style.display = 'block';
+
+        // Seçili kategoriye göre boyutları filtrele
+        const filteredSizes = this.bagSizes.filter(size => size.category === this.selectedBagType);
+
+        // Desktop slider için boyut kartları oluştur
+        sizeSlider.innerHTML = filteredSizes.map((size, index) => `
+            <div class="size-card ${index === 0 ? 'active' : ''}" 
+                 data-size-id="${size.id}" 
+                 data-dimensions="${size.dimensions}"
+                 data-min-quantity="${size.min_quantity}"
+                 data-base-price="${size.base_price}">
+                <h4>${size.dimensions}</h4>
+                <p>${size.size_name}</p>
+                <div class="size-features">
+                    <span class="feature-item">• ${size.description}</span>
+                    <span class="feature-item">• Minimum sipariş: ${size.min_quantity.toLocaleString()} adet</span>
+                    <span class="feature-item">• Kaliteli malzeme</span>
+                </div>
+                <span class="size-price">${size.base_price.toFixed(2)}₺/adet</span>
+                <span class="min-quantity-info">Min: ${size.min_quantity.toLocaleString()} adet</span>
+            </div>
+        `).join('');
+
+        // Mobil butonlar için boyut seçenekleri oluştur
+        mobileSizeButtons.innerHTML = filteredSizes.map((size, index) => `
+            <button class="size-btn ${index === 0 ? 'active' : ''}" 
+                    data-size-id="${size.id}"
+                    data-dimensions="${size.dimensions}"
+                    data-min-quantity="${size.min_quantity}"
+                    data-base-price="${size.base_price}">
+                <span class="size-title">${size.dimensions}</span>
+                <span class="size-subtitle">${size.size_name}</span>
+                <span class="size-price-mobile">${size.base_price.toFixed(2)}₺/adet</span>
+            </button>
+        `).join('');
+
+        // İlk boyutu seç
+        if (filteredSizes.length > 0) {
+            this.selectSize(filteredSizes[0]);
+        }
+
+        // Preset butonlarını güncelle
+        this.updateQuantityPresets();
+
+        // Slider fonksiyonlarını başlat
+        this.initSlider();
+    }
+
+    initSlider() {
+        const sizeSlider = document.getElementById('sizeSlider');
+        if (!sizeSlider) return;
+
+        const items = sizeSlider.querySelectorAll('.size-card');
+        let active = 0;
+
+        const loadShow = () => {
+            // Aktif kartı göster
+            items[active].style.transform = 'none';
+            items[active].style.zIndex = 1;
+            items[active].style.filter = 'none';
+            items[active].style.opacity = 1;
+
+            // Sonraki kartları göster
+            let stt = 0;
+            for (let i = active + 1; i < items.length; i++) {
+                stt++;
+                items[i].style.transform = `translateX(${120 * stt}px) scale(${1 - 0.2 * stt}) perspective(16px) rotateY(-1deg)`;
+                items[i].style.zIndex = -stt;
+                items[i].style.filter = 'blur(5px)';
+                items[i].style.opacity = stt > 2 ? 0 : 0.6;
+            }
+
+            // Önceki kartları göster
+            stt = 0;
+            for (let i = (active - 1); i >= 0; i--) {
+                stt++;
+                items[i].style.transform = `translateX(${-120 * stt}px) scale(${1 - 0.2 * stt}) perspective(16px) rotateY(1deg)`;
+                items[i].style.zIndex = -stt;
+                items[i].style.filter = 'blur(5px)';
+                items[i].style.opacity = stt > 2 ? 0 : 0.6;
+            }
+
+            // Aktif kartın boyutunu seç
+            const activeCard = items[active];
+            if (activeCard) {
+                const sizeId = parseInt(activeCard.dataset.sizeId);
+                const size = this.bagSizes.find(s => s.id === sizeId);
+                if (size) {
+                    this.selectSize(size);
+                }
+            }
+        };
+
+        // İlk gösterimi yap
+        loadShow();
+
+        // Next butonu
+        const nextBtn = document.querySelector('.size-next');
+        if (nextBtn) {
+            nextBtn.onclick = () => {
+                active = active + 1 < items.length ? active + 1 : active;
+                loadShow();
+            };
+        }
+
+        // Prev butonu
+        const prevBtn = document.querySelector('.size-prev');
+        if (prevBtn) {
+            prevBtn.onclick = () => {
+                active = active - 1 >= 0 ? active - 1 : active;
+                loadShow();
+            };
+        }
+    }
+
+    updateQuantityPresets() {
+        const qtyPresets = document.getElementById('qtyPresets');
+        if (!qtyPresets || !this.selectedSize) return;
+
+        const minQty = this.selectedSize.min_quantity;
+        const presets = [
+            minQty,
+            Math.ceil(minQty * 1.5),
+            minQty * 2,
+            minQty * 3
+        ];
+
+        qtyPresets.innerHTML = presets.map(qty => `
+            <button class="qty-preset ${qty === this.selectedQuantity ? 'active' : ''}" data-qty="${qty}">
+                ${qty.toLocaleString()}
+            </button>
+        `).join('');
+    }
+
+    selectSize(size) {
+        this.selectedSize = size;
+        this.selectedQuantity = size.min_quantity;
+        
+        // UI güncellemeleri
+        this.updateSizeSelection();
+        this.updateQuantityInput();
+        this.updateQuantityPresets();
+        this.updatePriceCalculation();
+        this.updateAddToCartButton();
+    }
+
+
+
+    updateSliderDisplay(activeIndex) {
+        const sizeSlider = document.getElementById('sizeSlider');
+        if (!sizeSlider) return;
+
+        const items = sizeSlider.querySelectorAll('.size-card');
+        const active = activeIndex;
+
+        // Aktif kartı göster
+        items[active].style.transform = 'none';
+        items[active].style.zIndex = 1;
+        items[active].style.filter = 'none';
+        items[active].style.opacity = 1;
+
+        // Sonraki kartları göster
+        let stt = 0;
+        for (let i = active + 1; i < items.length; i++) {
+            stt++;
+            items[i].style.transform = `translateX(${120 * stt}px) scale(${1 - 0.2 * stt}) perspective(16px) rotateY(-1deg)`;
+            items[i].style.zIndex = -stt;
+            items[i].style.filter = 'blur(5px)';
+            items[i].style.opacity = stt > 2 ? 0 : 0.6;
+        }
+
+        // Önceki kartları göster
+        stt = 0;
+        for (let i = (active - 1); i >= 0; i--) {
+            stt++;
+            items[i].style.transform = `translateX(${-120 * stt}px) scale(${1 - 0.2 * stt}) perspective(16px) rotateY(1deg)`;
+            items[i].style.zIndex = -stt;
+            items[i].style.filter = 'blur(5px)';
+            items[i].style.opacity = stt > 2 ? 0 : 0.6;
+        }
+
+        // Aktif kartın boyutunu seç
+        const activeCard = items[active];
+        if (activeCard) {
+            const sizeId = parseInt(activeCard.dataset.sizeId);
+            const size = this.bagSizes.find(s => s.id === sizeId);
+            if (size) {
+                this.selectSize(size);
+            }
+        }
+    }
+
+    updateSizeSelection() {
+        // Desktop kartları güncelle
+        document.querySelectorAll('.size-card').forEach(card => {
+            card.classList.remove('active');
+            if (card.dataset.sizeId == this.selectedSize.id) {
+                card.classList.add('active');
+            }
+        });
+
+        // Mobil butonları güncelle
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.sizeId == this.selectedSize.id) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    updateQuantityInput() {
+        const quantityInput = document.getElementById('quantity');
+        if (quantityInput) {
+            quantityInput.value = this.selectedQuantity;
+            quantityInput.min = this.selectedSize.min_quantity;
+        }
+    }
+
+    updatePriceCalculation() {
+        if (!this.selectedSize) return;
+
+        let unitPrice = this.selectedSize.base_price;
+        
+        // Kumaş tipine göre fiyat ayarı
+        if (this.selectedFabric === 'premium') {
+            unitPrice *= 1.3; // Premium kumaş %30 daha pahalı
+        }
+
+        const totalPrice = unitPrice * this.selectedQuantity;
+        
+        // İndirim hesaplama
+        let discount = 0;
+        if (this.selectedQuantity >= 5000) {
+            discount = 0.15; // %15 indirim
+        } else if (this.selectedQuantity >= 3000) {
+            discount = 0.10; // %10 indirim
+        }
+
+        const discountedPrice = totalPrice * (1 - discount);
+
+        // UI güncellemeleri
+        document.getElementById('unitPrice').textContent = unitPrice.toFixed(2) + '₺';
+        document.getElementById('totalQty').textContent = this.selectedQuantity.toLocaleString();
+        document.getElementById('totalPrice').textContent = discountedPrice.toFixed(2) + '₺';
+
+        // İndirim bilgisi
+        if (discount > 0) {
+            document.getElementById('totalPrice').innerHTML = `
+                <span style="text-decoration: line-through; color: #999; font-size: 0.9em;">${totalPrice.toFixed(2)}₺</span><br>
+                <span style="color: #FF6000; font-weight: bold;">${discountedPrice.toFixed(2)}₺</span>
+                <span style="color: #27ae60; font-size: 0.8em;">(%${(discount * 100)} indirim)</span>
+            `;
+        }
+    }
+
+    updateAddToCartButton() {
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        if (!addToCartBtn) return;
+
+        if (this.selectedSize && this.selectedQuantity >= this.selectedSize.min_quantity) {
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Sepete Ekle';
+        } else {
+            addToCartBtn.disabled = true;
+            addToCartBtn.textContent = 'Boyut Seçiniz';
+        }
+    }
+
+    setupEventListeners() {
+        // Çanta tipi seçimi
+        document.querySelectorAll('.type-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                this.selectedBagType = option.dataset.category;
+                this.renderSizes();
+                this.updateUI();
+            });
+        });
+
+        // Kumaş seçimi
+        document.querySelectorAll('.fabric-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.fabric-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                this.selectedFabric = option.dataset.fabric;
+                this.updatePriceCalculation();
+                this.updateUI();
+            });
+        });
+
+        // Boyut seçimi (Desktop)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.size-card')) {
+                const card = e.target.closest('.size-card');
+                const sizeId = parseInt(card.dataset.sizeId);
+                const size = this.bagSizes.find(s => s.id === sizeId);
+                if (size) {
+                    // Slider'da aktif kartı güncelle
+                    const items = document.querySelectorAll('.size-card');
+                    let activeIndex = 0;
+                    items.forEach((item, index) => {
+                        if (item.dataset.sizeId == sizeId) {
+                            activeIndex = index;
+                        }
+                    });
+                    this.updateSliderDisplay(activeIndex);
+                }
+            }
+        });
+
+        // Boyut seçimi (Mobil)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.size-btn')) {
+                const btn = e.target.closest('.size-btn');
+                const sizeId = parseInt(btn.dataset.sizeId);
+                const size = this.bagSizes.find(s => s.id === sizeId);
+                if (size) {
+                    this.selectSize(size);
+                }
+            }
+        });
+
+        // Adet değişimi
+        const quantityInput = document.getElementById('quantity');
+        if (quantityInput) {
+            quantityInput.addEventListener('input', (e) => {
+                this.selectedQuantity = parseInt(e.target.value) || 0;
+                this.checkMinimumQuantity();
+                this.updatePriceCalculation();
+                this.updateAddToCartButton();
+            });
+        }
+
+        // Adet artır/azalt butonları
+        document.querySelectorAll('.qty-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const isPlus = btn.classList.contains('plus');
+                const step = 100;
+                
+                if (isPlus) {
+                    this.selectedQuantity += step;
+                } else {
+                    this.selectedQuantity = Math.max(this.selectedSize?.min_quantity || 1000, this.selectedQuantity - step);
+                }
+                
+                this.updateQuantityInput();
+                this.checkMinimumQuantity();
+                this.updatePriceCalculation();
+                this.updateAddToCartButton();
+            });
+        });
+
+        // Preset butonları
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('qty-preset')) {
+                const qty = parseInt(e.target.dataset.qty);
+                this.selectedQuantity = qty;
+                this.updateQuantityInput();
+                this.checkMinimumQuantity();
+                this.updatePriceCalculation();
+                this.updateAddToCartButton();
+                
+                // Active class güncelle
+                document.querySelectorAll('.qty-preset').forEach(preset => preset.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+
+        // Sepete ekle butonu
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', () => {
+                this.addToCart();
+            });
+        }
+    }
+
+    checkMinimumQuantity() {
+        const warning = document.getElementById('minQuantityWarning');
+        const warningText = document.getElementById('minQuantityText');
+        
+        if (!this.selectedSize || !warning || !warningText) return;
+
+        if (this.selectedQuantity < this.selectedSize.min_quantity) {
+            warning.style.display = 'flex';
+            warningText.textContent = this.selectedSize.min_quantity.toLocaleString();
+        } else {
+            warning.style.display = 'none';
+        }
+    }
+
+    updateUI() {
+        // Seçili tip bilgilerini güncelle
+        const selectedType = document.getElementById('selectedType');
+        const selectedDescription = document.getElementById('selectedDescription');
+        const fabricType = document.getElementById('fabricType');
+
+        if (selectedType) {
+            selectedType.textContent = this.selectedBagType;
+        }
+
+        if (selectedDescription) {
+            const size = this.bagSizes.find(s => s.category === this.selectedBagType);
+            if (size) {
+                selectedDescription.textContent = size.description;
+            }
+        }
+
+        if (fabricType) {
+            fabricType.textContent = this.selectedFabric === 'premium' ? 'Premium' : 'Standart';
+        }
+
+        // Specs güncelle
+        const selectedSpecs = document.getElementById('selectedSpecs');
+        if (selectedSpecs) {
+            const fabricName = this.selectedFabric === 'premium' ? 'Premium Kumaş' : 'Standart Kumaş';
+            const sizeText = this.selectedSize ? this.selectedSize.dimensions : 'Boyut seçiniz';
+            selectedSpecs.textContent = `${fabricName} - ${sizeText}`;
+        }
+    }
+
+    addToCart() {
+        if (!this.selectedSize || this.selectedQuantity < this.selectedSize.min_quantity) {
+            alert('Lütfen minimum sipariş miktarını karşılayın!');
+            return;
+        }
+
+        const cartItem = {
+            typeName: this.selectedBagType,
+            size: this.selectedSize.dimensions,
+            fabric: this.selectedFabric,
+            quantity: this.selectedQuantity,
+            unitPrice: parseFloat(document.getElementById('unitPrice').textContent),
+            total: parseFloat(document.getElementById('totalPrice').textContent),
+            minQuantity: this.selectedSize.min_quantity,
+            bagType: this.selectedBagType,
+            bagDimensions: this.selectedSize.dimensions
+        };
+
+        // Local storage'a ekle
+        let cart = JSON.parse(localStorage.getItem('gopakCart') || '[]');
+        cart.push(cartItem);
+        localStorage.setItem('gopakCart', JSON.stringify(cart));
+
+        // Cart count güncelle
+        this.updateCartCount();
+
+        // Başarı mesajı
+        alert('Ürün sepete eklendi!');
+    }
+
+    updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('gopakCart') || '[]');
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            cartCount.textContent = cart.length;
+        }
+    }
+}
+
+// Sayfa yüklendiğinde çanta konfiguratörünü başlat
+document.addEventListener('DOMContentLoaded', () => {
+    new BagConfigurator();
+});
