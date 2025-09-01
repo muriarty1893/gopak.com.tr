@@ -13,46 +13,45 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    // Çanta boyutlarını getir
-    $stmt = $pdo->prepare("
-        SELECT 
-            id,
-            category,
-            size_name,
-            dimensions,
-            min_quantity,
-            base_price,
-            description,
-            is_active
+            // Çanta boyutlarını getir
+        $stmt = $pdo->prepare("
+            SELECT 
+                id,
+                name,
+                bag_type,
+                bag_dimensions,
+                min_order_quantity,
+                price,
+                bag_description,
+                description
         FROM products 
         WHERE bag_type IS NOT NULL 
-        AND is_active = 1
         ORDER BY 
             CASE 
                 WHEN bag_type = '3D Çanta (Yan Körüklü)' THEN 1
                 WHEN bag_type = 'Düz Çanta (Yan Körüksüz)' THEN 2
                 ELSE 3
             END,
-            min_quantity ASC
-    ");
-    
-    $stmt->execute();
-    $sizes = $stmt->fetchAll();
-    
-    // Verileri formatla
-    $formattedSizes = [];
-    foreach ($sizes as $size) {
-        $formattedSizes[] = [
-            'id' => $size['id'],
-            'category' => $size['category'],
-            'size_name' => $size['size_name'] ?: $size['name'],
-            'dimensions' => $size['bag_dimensions'] ?: $size['dimensions'],
-            'min_quantity' => (int)$size['min_order_quantity'] ?: (int)$size['min_quantity'],
-            'base_price' => (float)$size['price'] ?: (float)$size['base_price'],
-            'description' => $size['bag_description'] ?: $size['description'],
-            'is_active' => (bool)$size['is_active']
-        ];
-    }
+            min_order_quantity ASC
+        ");
+        
+        $stmt->execute();
+        $sizes = $stmt->fetchAll();
+        
+        // Verileri formatla
+        $formattedSizes = [];
+        foreach ($sizes as $size) {
+            $formattedSizes[] = [
+                'id' => $size['id'],
+                'category' => $size['bag_type'],
+                'size_name' => $size['name'],
+                'dimensions' => $size['bag_dimensions'],
+                'min_quantity' => (int)$size['min_order_quantity'],
+                'base_price' => (float)$size['price'],
+                'description' => $size['bag_description'] ?: $size['description'],
+                'is_active' => true
+            ];
+        }
     
     echo json_encode([
         'success' => true,
