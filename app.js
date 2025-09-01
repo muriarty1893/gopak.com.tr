@@ -1458,30 +1458,11 @@ class BagConfigurator {
         }
 
         const totalPrice = unitPrice * this.selectedQuantity;
-        
-        // İndirim hesaplama
-        let discount = 0;
-        if (this.selectedQuantity >= 5000) {
-            discount = 0.15; // %15 indirim
-        } else if (this.selectedQuantity >= 3000) {
-            discount = 0.10; // %10 indirim
-        }
-
-        const discountedPrice = totalPrice * (1 - discount);
 
         // UI güncellemeleri
         document.getElementById('unitPrice').textContent = unitPrice.toFixed(2) + '₺';
         document.getElementById('totalQty').textContent = this.selectedQuantity.toLocaleString();
-        document.getElementById('totalPrice').textContent = discountedPrice.toFixed(2) + '₺';
-
-        // İndirim bilgisi
-        if (discount > 0) {
-            document.getElementById('totalPrice').innerHTML = `
-                <span style="text-decoration: line-through; color: #999; font-size: 0.9em;">${totalPrice.toFixed(2)}₺</span><br>
-                <span style="color: #FF6000; font-weight: bold;">${discountedPrice.toFixed(2)}₺</span>
-                <span style="color: #27ae60; font-size: 0.8em;">(%${(discount * 100)} indirim)</span>
-            `;
-        }
+        document.getElementById('totalPrice').textContent = totalPrice.toFixed(2) + '₺';
     }
 
     updateAddToCartButton() {
