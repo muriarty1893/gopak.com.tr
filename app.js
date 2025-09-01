@@ -1118,6 +1118,7 @@ class BagConfigurator {
         await this.loadBagSizes();
         this.setupEventListeners();
         this.updateUI();
+        this.updateCartCount(); // Başlangıçta cart count'u güncelle
     }
 
     async loadBagSizes() {
@@ -1640,35 +1641,102 @@ class BagConfigurator {
             return;
         }
 
+        const unitPrice = parseFloat(document.getElementById('unitPrice').textContent);
+        const totalPrice = parseFloat(document.getElementById('totalPrice').textContent);
+
         const cartItem = {
+            id: Date.now(),
             typeName: this.selectedBagType,
+            colorName: this.selectedFabric === 'premium' ? 'Premium Kumaş' : 'Standart Kumaş',
             size: this.selectedSize.dimensions,
-            fabric: this.selectedFabric,
             quantity: this.selectedQuantity,
-            unitPrice: parseFloat(document.getElementById('unitPrice').textContent),
-            total: parseFloat(document.getElementById('totalPrice').textContent),
+            unitPrice: unitPrice,
+            total: totalPrice,
             minQuantity: this.selectedSize.min_quantity,
             bagType: this.selectedBagType,
-            bagDimensions: this.selectedSize.dimensions
+            bagDimensions: this.selectedSize.dimensions,
+            addedAt: new Date().toISOString()
         };
 
-        // Local storage'a ekle
-        let cart = JSON.parse(localStorage.getItem('gopakCart') || '[]');
+        // Eski sepet sistemine uygun formatta ekle
+        let cart = JSON.parse(localStorage.getItem('gopak_cart') || '[]');
         cart.push(cartItem);
-        localStorage.setItem('gopakCart', JSON.stringify(cart));
+        localStorage.setItem('gopak_cart', JSON.stringify(cart));
 
         // Cart count güncelle
         this.updateCartCount();
 
         // Başarı mesajı
-        alert('Ürün sepete eklendi!');
+        this.showAddToCartSuccess(cartItem);
+    }
+
+    showAddToCartSuccess(item) {
+        // Başarı bildirimi göster
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #90EE90, #32CD32);
+            color: #000;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(144, 238, 144, 0.3);
+            z-index: 999;
+            font-weight: bold;
+            max-width: 300px;
+            animation: slideInRight 0.3s ease;
+        `;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5em;">🛒</span>
+                <div>
+                    <div style="font-size: 1.1em; margin-bottom: 5px;">Sepete Eklendi!</div>
+                    <div style="font-size: 0.9em; opacity: 0.8;">
+                        ${item.quantity} adet ${item.typeName}<br>
+                        ${item.colorName} - ${item.size}<br>
+                        <strong>${item.total.toFixed(2)}₺</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // 4 saniye sonra kaldır
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+
+        // Animasyon stilleri ekle
+        if (!document.getElementById('cart-animations')) {
+            const style = document.createElement('style');
+            style.id = 'cart-animations';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 
     updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('gopakCart') || '[]');
+        const cart = JSON.parse(localStorage.getItem('gopak_cart') || '[]');
         const cartCount = document.getElementById('cartCount');
         if (cartCount) {
             cartCount.textContent = cart.length;
+            cartCount.style.display = cart.length > 0 ? 'flex' : 'none';
         }
     }
 }

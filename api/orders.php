@@ -163,6 +163,9 @@ try {
             $minQuantityMet = isset($cartItem['minQuantity']) && $cartItem['quantity'] >= $cartItem['minQuantity'];
         }
         
+        // Subtotal hesaplama
+        $subtotal = $cartItem['unitPrice'] * $cartItem['quantity'];
+        
         $orderStmt->execute([
             $orderNumber,
             $customerId,
@@ -172,7 +175,7 @@ try {
             $cartItem['quantity'],
             $cartItem['unitPrice'],
             $cartItem['sizeMultiplier'] ?? 1.0,
-            $cartItem['subtotal'],
+            $subtotal,
             $cartItem['discount'] ?? 0,
             $cartItem['total'],
             $bagType,

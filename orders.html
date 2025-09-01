@@ -144,13 +144,27 @@
             
             const ordersHtml = orders.map(order => {
                 const orderDate = new Date(order.order_date).toLocaleString('tr-TR');
-                const itemsHtml = order.cartItems.map(item => `
-                    <div class="order-item">
-                        <strong>${item.typeName}</strong><br>
-                        ${item.colorName} - ${item.size} cm - ${item.quantity} adet<br>
-                        <strong>${item.total.toFixed(0)}₺</strong>
-                    </div>
-                `).join('');
+                const itemsHtml = order.cartItems.map(item => {
+                    // Çanta ürünleri için özel gösterim
+                    if (item.bagType) {
+                        return `
+                            <div class="order-item">
+                                <strong>${item.typeName}</strong><br>
+                                ${item.colorName} - ${item.size} - ${item.quantity} adet<br>
+                                <strong>${item.total.toFixed(2)}₺</strong>
+                            </div>
+                        `;
+                    } else {
+                        // Eski ürünler için normal gösterim
+                        return `
+                            <div class="order-item">
+                                <strong>${item.typeName}</strong><br>
+                                ${item.colorName} - ${item.size} cm - ${item.quantity} adet<br>
+                                <strong>${item.total.toFixed(0)}₺</strong>
+                            </div>
+                        `;
+                    }
+                }).join('');
                 
                 return `
                     <div class="order-card">
