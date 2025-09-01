@@ -1106,6 +1106,7 @@ class BagConfigurator {
     constructor() {
         this.selectedBagType = '3D Çanta (Yan Körüklü)';
         this.selectedFabric = 'standard';
+        this.selectedPrint = 'no';
         this.selectedSize = null;
         this.selectedQuantity = 2500;
         this.bagSizes = [];
@@ -1458,6 +1459,11 @@ class BagConfigurator {
             unitPrice *= 1.3; // Premium kumaş %30 daha pahalı
         }
 
+        // Özel baskı ek ücreti
+        if (this.selectedPrint === 'yes') {
+            unitPrice += 1.0; // Özel baskı +1₺/adet
+        }
+
         const totalPrice = unitPrice * this.selectedQuantity;
 
         // UI güncellemeleri
@@ -1499,6 +1505,18 @@ class BagConfigurator {
                 option.classList.add('active');
                 
                 this.selectedFabric = option.dataset.fabric;
+                this.updatePriceCalculation();
+                this.updateUI();
+            });
+        });
+
+        // Özel baskı seçimi
+        document.querySelectorAll('.print-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.print-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                this.selectedPrint = option.dataset.print;
                 this.updatePriceCalculation();
                 this.updateUI();
             });
@@ -1626,12 +1644,19 @@ class BagConfigurator {
             fabricType.textContent = this.selectedFabric === 'premium' ? 'Premium' : 'Standart';
         }
 
+        // Baskı tipi güncelle
+        const printType = document.getElementById('printType');
+        if (printType) {
+            printType.textContent = this.selectedPrint === 'yes' ? 'Özel Baskı' : 'Baskısız';
+        }
+
         // Specs güncelle
         const selectedSpecs = document.getElementById('selectedSpecs');
         if (selectedSpecs) {
             const fabricName = this.selectedFabric === 'premium' ? 'Premium Kumaş' : 'Standart Kumaş';
+            const printName = this.selectedPrint === 'yes' ? ' + Özel Baskı' : '';
             const sizeText = this.selectedSize ? this.selectedSize.dimensions : 'Boyut seçiniz';
-            selectedSpecs.textContent = `${fabricName} - ${sizeText}`;
+            selectedSpecs.textContent = `${fabricName}${printName} - ${sizeText}`;
         }
     }
 
@@ -1648,6 +1673,7 @@ class BagConfigurator {
             id: Date.now(),
             typeName: this.selectedBagType,
             colorName: this.selectedFabric === 'premium' ? 'Premium Kumaş' : 'Standart Kumaş',
+            printType: this.selectedPrint === 'yes' ? 'Özel Baskı' : 'Baskısız',
             size: this.selectedSize.dimensions,
             quantity: this.selectedQuantity,
             unitPrice: unitPrice,

@@ -583,6 +583,13 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     <textarea id="productBagDescription" name="bag_description" placeholder="örn: Pastane ve tatlıcılar için uygun"></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="productHasCustomPrint">Özel Baskı Seçeneği</label>
+                    <select id="productHasCustomPrint" name="has_custom_print">
+                        <option value="0">Yok (Baskısız)</option>
+                        <option value="1">Var (+1₺/adet)</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="productImage">Resim URL</label>
                     <input type="url" id="productImage" name="image_url" placeholder="https://example.com/image.jpg">
                 </div>
@@ -653,6 +660,13 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <div class="form-group">
                     <label for="editProductBagDescription">Çanta Açıklaması</label>
                     <textarea id="editProductBagDescription" name="bag_description" placeholder="örn: Pastane ve tatlıcılar için uygun"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editProductHasCustomPrint">Özel Baskı Seçeneği</label>
+                    <select id="editProductHasCustomPrint" name="has_custom_print">
+                        <option value="0">Yok (Baskısız)</option>
+                        <option value="1">Var (+1₺/adet)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="editProductImage">Resim URL</label>
@@ -1001,6 +1015,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                             <th>Fiyat</th>
                             <th>Stok</th>
                             <th>Özel</th>
+                            <th>Özel Baskı</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
@@ -1016,6 +1031,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                                 <td>${product.price}₺</td>
                                 <td>${product.stock_quantity}</td>
                                 <td>${product.is_custom ? 'Evet' : 'Hayır'}</td>
+                                <td>${product.has_custom_print ? 'Var (+1₺)' : 'Yok'}</td>
                                 <td>
                                     <div class="action-buttons">
                                         <button class="btn-edit" onclick="editProduct(${product.id})">Düzenle</button>
@@ -1090,6 +1106,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             document.getElementById('editProductBagDimensions').value = product.bag_dimensions || '';
             document.getElementById('editProductMinOrderQuantity').value = product.min_order_quantity || '';
             document.getElementById('editProductBagDescription').value = product.bag_description || '';
+            document.getElementById('editProductHasCustomPrint').value = product.has_custom_print || '0';
             document.getElementById('editProductImage').value = product.image_url || '';
             document.getElementById('editProductCustom').checked = product.is_custom;
             

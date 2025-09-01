@@ -137,6 +137,23 @@
               </div>
             </div>
 
+            <!-- Custom Print Selection -->
+            <div class="config-group">
+              <h3>🖨️ Özel Baskı</h3>
+              <div class="print-selector">
+                <div class="print-option active" data-print="no" data-name="Baskısız">
+                  <div class="print-icon">📦</div>
+                  <span>Baskısız</span>
+                  <small>Standart üretim</small>
+                </div>
+                <div class="print-option" data-print="yes" data-name="Özel Baskı">
+                  <div class="print-icon">🎨</div>
+                  <span>Özel Baskı</span>
+                  <small>+1₺/adet ek ücret</small>
+                </div>
+              </div>
+            </div>
+
             <!-- Size Selection with Card Slider -->
             <div class="config-group">
               <h3>Boyut Seçimi</h3>
@@ -203,6 +220,10 @@
                 <div class="price-row">
                   <span>Kumaş Tipi:</span>
                   <span id="fabricType">Standart</span>
+                </div>
+                <div class="price-row">
+                  <span>Baskı:</span>
+                  <span id="printType">Baskısız</span>
                 </div>
                 <div class="price-row total">
                   <span>Toplam Tutar:</span>

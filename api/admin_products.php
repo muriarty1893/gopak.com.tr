@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 bag_dimensions,
                 min_order_quantity,
                 bag_description,
+                has_custom_print,
                 created_at,
                 updated_at
             FROM products 
@@ -113,8 +114,8 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             INSERT INTO products (
                 name, description, price, stock_quantity, 
                 image_url, category, is_custom, bag_type, bag_dimensions, 
-                min_order_quantity, bag_description, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                min_order_quantity, bag_description, has_custom_print, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
         
         $stmt->execute([
@@ -128,7 +129,8 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data['bag_type'] ?? null,
             $data['bag_dimensions'] ?? null,
             !empty($data['min_order_quantity']) ? (int)$data['min_order_quantity'] : null,
-            $data['bag_description'] ?? null
+            $data['bag_description'] ?? null,
+            isset($data['has_custom_print']) ? (bool)$data['has_custom_print'] : false
         ]);
         
         $productId = $pdo->lastInsertId();
@@ -192,6 +194,7 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                 bag_dimensions = ?,
                 min_order_quantity = ?,
                 bag_description = ?,
+                has_custom_print = ?,
                 updated_at = NOW()
             WHERE id = ?
         ");
@@ -208,6 +211,7 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             $data['bag_dimensions'] ?? null,
             !empty($data['min_order_quantity']) ? (int)$data['min_order_quantity'] : null,
             $data['bag_description'] ?? null,
+            isset($data['has_custom_print']) ? (bool)$data['has_custom_print'] : false,
             $productId
         ]);
         

@@ -1322,6 +1322,16 @@ html {
     padding: 0;
     z-index: 10;
     max-width: 600px;
+    text-align: center; /* İçeriği ortala */
+}
+
+/* Mobil için wrapper yüksekliği artırma */
+@media (max-width: 768px) {
+    .size-slider-wrapper {
+        height: 350px;
+        min-height: 350px;
+        margin: 30px auto;
+    }
 }
 
 .size-slider {
@@ -1334,13 +1344,96 @@ html {
     align-items: center;
 }
 
+/* Mobil için dikey genişlik artırma */
+@media (max-width: 768px) {
+    .size-slider {
+        height: 300px;
+        min-height: 300px;
+    }
+    
+    .size-card {
+        height: auto;
+        min-height: 280px;
+        padding: 18px 15px;
+        width: 200px;
+        margin-left: -20px; /* Mobilde kartları hafif sola al */
+    }
+    
+    .size-features {
+        margin: 15px 0;
+    }
+    
+    .size-features .feature-item {
+        font-size: 0.85em;
+        line-height: 1.4;
+        margin-bottom: 8px;
+    }
+    
+    .size-card h4 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+    
+    .size-card p {
+        font-size: 0.9em;
+        margin-bottom: 12px;
+    }
+    
+    .size-price {
+        font-size: 1em;
+        margin-top: 15px;
+    }
+    
+    .min-quantity-info {
+        font-size: 0.85em;
+        margin-top: 8px;
+    }
+}
+
+/* Çok küçük ekranlar için ek ayarlar */
+@media (max-width: 480px) {
+    .size-slider-wrapper {
+        height: 320px;
+        min-height: 320px;
+        margin: 20px auto;
+    }
+    
+    .size-slider {
+        height: 280px;
+        min-height: 280px;
+    }
+    
+    .size-card {
+        min-height: 260px;
+        width: 180px;
+        padding: 14px 12px;
+        margin-left: -15px; /* Küçük mobilde kartları hafif sola al */
+    }
+    
+    .size-features .feature-item {
+        font-size: 0.8em;
+        line-height: 1.3;
+        margin-bottom: 6px;
+    }
+    
+    .size-card h4 {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+    
+    .size-card p {
+        font-size: 0.85em;
+        margin-bottom: 10px;
+    }
+}
+
 .size-card {
     position: absolute;
     width: 180px;
-    height: 200px;
+    height: 240px;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px 14px;
     border: 2px solid #e0e0e0;
     cursor: pointer;
     transition: all 0.5s ease;
@@ -1350,6 +1443,7 @@ html {
     transform: translateX(-50%);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+    margin-left: -15px; /* Kartları hafif sola al */
 }
 
 
@@ -3025,6 +3119,59 @@ html {
 }
 
 .fabric-option small {
+    display: block;
+    color: #666;
+    font-size: 0.85em;
+}
+
+/* Print Selector Styles */
+.print-selector {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.print-option {
+    flex: 1;
+    min-width: 150px;
+    padding: 20px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.print-option:hover {
+    border-color: #FF6000;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 96, 0, 0.15);
+}
+
+.print-option.active {
+    border-color: #FF6000;
+    background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
+    box-shadow: 0 8px 25px rgba(255, 96, 0, 0.2);
+}
+
+.print-icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.print-option span {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.print-option small {
     display: block;
     color: #666;
     font-size: 0.85em;
