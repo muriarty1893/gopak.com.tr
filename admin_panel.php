@@ -464,6 +464,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 <button class="nav-btn" data-section="orders">📋 Siparişler</button>
                 <button class="nav-btn" data-section="customers">👥 Müşteriler</button>
                 <button class="nav-btn" data-section="products">🛍️ Ürünler</button>
+                <button class="nav-btn" data-section="prices">💰 Fiyat Yönetimi</button>
             </div>
             
             <div class="admin-content">
@@ -523,6 +524,17 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     </div>
                     <div id="productsContent">
                         <div class="loading">Ürünler yükleniyor...</div>
+                    </div>
+                </div>
+                
+                <!-- Prices Section -->
+                <div id="prices" class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">💰 Fiyat Yönetimi</h2>
+                        <button class="add-button" onclick="showBulkPriceModal()">📈 Toplu Fiyat Güncelle</button>
+                    </div>
+                    <div id="pricesContent">
+                        <div class="loading">Fiyatlar yükleniyor...</div>
                     </div>
                 </div>
             </div>
@@ -698,6 +710,87 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
             </div>
         </div>
     </div>
+    
+    <!-- Bulk Price Update Modal -->
+    <div id="bulkPriceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📈 Toplu Fiyat Güncelleme</h3>
+                <span class="close" onclick="closeModal('bulkPriceModal')">&times;</span>
+            </div>
+            <form id="bulkPriceForm">
+                <div class="form-group">
+                    <label for="percentageChange">Fiyat Değişim Yüzdesi (%)</label>
+                    <input type="number" id="percentageChange" name="percentage_change" step="0.1" required 
+                           placeholder="Örn: 10 (artış) veya -5 (azalış)">
+                    <small style="color: #666; font-size: 0.9em;">
+                        Pozitif değer: Fiyat artışı, Negatif değer: Fiyat azalışı
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="priceChangeReason">Güncelleme Nedeni</label>
+                    <textarea id="priceChangeReason" name="reason" rows="3" 
+                              placeholder="Örn: Enflasyon nedeniyle genel fiyat artışı, Hammadde maliyeti artışı, vb."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Etkilenecek Ürünler</label>
+                    <div id="affectedProductsPreview" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                        <div style="color: #666;">Fiyat değişim yüzdesi girildikten sonra etkilenecek ürünler burada görünecek...</div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('bulkPriceModal')">İptal</button>
+                    <button type="submit" class="btn-primary">Fiyatları Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Individual Price Edit Modal -->
+    <div id="editPriceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Ürün Fiyatı Düzenle</h3>
+                <span class="close" onclick="closeModal('editPriceModal')">&times;</span>
+            </div>
+            <form id="editPriceForm">
+                <input type="hidden" id="editPriceProductId" name="id">
+                <div class="form-group">
+                    <label for="editPriceProductName">Ürün Adı</label>
+                    <input type="text" id="editPriceProductName" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label for="editPriceProductCategory">Kategori</label>
+                    <input type="text" id="editPriceProductCategory" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label for="editPriceProductType">Çanta Tipi</label>
+                    <input type="text" id="editPriceProductType" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label for="editPriceProductDimensions">Boyutlar</label>
+                    <input type="text" id="editPriceProductDimensions" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label for="editPriceOldPrice">Mevcut Fiyat (₺)</label>
+                    <input type="text" id="editPriceOldPrice" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label for="editPriceNewPrice">Yeni Fiyat (₺) *</label>
+                    <input type="number" id="editPriceNewPrice" name="price" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPriceReason">Güncelleme Nedeni</label>
+                    <textarea id="editPriceReason" name="reason" rows="3" 
+                              placeholder="Fiyat güncelleme nedeni..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('editPriceModal')">İptal</button>
+                    <button type="submit" class="btn-primary">Fiyatı Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // Global variables
@@ -705,6 +798,7 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
         let orders = [];
         let customers = [];
         let products = [];
+        let priceHistory = [];
         
         // Logout function
         async function logout() {
@@ -762,6 +856,9 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                     break;
                 case 'products':
                     loadProducts();
+                    break;
+                case 'prices':
+                    loadPrices();
                     break;
             }
         }
@@ -1309,6 +1406,301 @@ $admin_role = $_SESSION['admin_role'] ?? 'admin';
                 event.target.style.display = 'none';
             }
         }
+        
+        // Price Management Functions
+        async function loadPrices() {
+            try {
+                const [pricesRes, historyRes] = await Promise.all([
+                    fetch('api/admin_prices.php'),
+                    fetch('api/admin_price_history.php')
+                ]);
+                
+                if (pricesRes.ok && historyRes.ok) {
+                    const pricesData = await pricesRes.json();
+                    const historyData = await historyRes.json();
+                    
+                    products = pricesData.products || [];
+                    priceHistory = historyData.history || [];
+                    
+                    displayPrices();
+                    displayPriceHistory();
+                } else {
+                    throw new Error('API yanıtları başarısız');
+                }
+            } catch (error) {
+                console.error('Fiyat yükleme hatası:', error);
+                document.getElementById('pricesContent').innerHTML = `
+                    <div class="error-message">
+                        Fiyatlar yüklenirken hata oluştu: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function displayPrices() {
+            if (products.length === 0) {
+                document.getElementById('pricesContent').innerHTML = `
+                    <div class="no-products">
+                        <p>Henüz ürün bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const pricesHtml = `
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 20px; color: #333;">📊 Ürün Fiyat Listesi</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ürün Adı</th>
+                                <th>Kategori</th>
+                                <th>Çanta Tipi</th>
+                                <th>Boyutlar</th>
+                                <th>Min. Sipariş</th>
+                                <th>Mevcut Fiyat</th>
+                                <th>Özel Baskı</th>
+                                <th>Son Güncelleme</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map(product => `
+                                <tr>
+                                    <td>${product.id}</td>
+                                    <td><strong>${product.name}</strong></td>
+                                    <td>${product.category}</td>
+                                    <td>${product.bag_type || '-'}</td>
+                                    <td>${product.bag_dimensions || '-'}</td>
+                                    <td>${product.min_order_quantity ? product.min_order_quantity.toLocaleString() : '-'}</td>
+                                    <td><span style="font-weight: bold; color: #FF6000;">${product.price}₺</span></td>
+                                    <td>${product.has_custom_print ? 'Var (+1₺)' : 'Yok'}</td>
+                                    <td>${new Date(product.updated_at).toLocaleDateString('tr-TR')}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editProductPrice(${product.id})">Fiyat Düzenle</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('pricesContent').innerHTML = pricesHtml;
+        }
+        
+        function displayPriceHistory() {
+            const historyHtml = `
+                <div>
+                    <h3 style="margin-bottom: 20px; color: #333;">📈 Fiyat Değişim Geçmişi</h3>
+                    ${priceHistory.length > 0 ? `
+                        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px;">
+                            <table class="data-table" style="margin: 0;">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Tip</th>
+                                        <th>Değişim</th>
+                                        <th>Neden</th>
+                                        <th>Etkilenen Ürün</th>
+                                        <th>Eski Fiyat</th>
+                                        <th>Yeni Fiyat</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${priceHistory.map(record => `
+                                        <tr>
+                                            <td>${new Date(record.created_at).toLocaleString('tr-TR')}</td>
+                                            <td>
+                                                <span class="status-badge ${record.change_type === 'increase' ? 'status-confirmed' : 'status-pending'}">
+                                                    ${record.change_type === 'increase' ? '📈 Artış' : '📉 Azalış'}
+                                                </span>
+                                            </td>
+                                            <td><strong>${record.percentage_change > 0 ? '+' : ''}${record.percentage_change}%</strong></td>
+                                            <td>${record.reason || '-'}</td>
+                                            <td>${record.product_name || `${record.affected_products} ürün`}</td>
+                                            <td>${record.old_price ? `${record.old_price}₺` : '-'}</td>
+                                            <td>${record.new_price ? `${record.new_price}₺` : '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : '<p style="text-align: center; color: #666;">Henüz fiyat değişimi bulunmuyor.</p>'}
+                </div>
+            `;
+            
+            document.getElementById('pricesContent').innerHTML += historyHtml;
+        }
+        
+        // Bulk Price Update Functions
+        function showBulkPriceModal() {
+            document.getElementById('bulkPriceModal').style.display = 'block';
+            document.getElementById('bulkPriceForm').reset();
+            document.getElementById('affectedProductsPreview').innerHTML = 
+                '<div style="color: #666;">Fiyat değişim yüzdesi girildikten sonra etkilenecek ürünler burada görünecek...</div>';
+        }
+        
+        // Preview affected products when percentage changes
+        document.getElementById('percentageChange').addEventListener('input', function() {
+            const percentage = parseFloat(this.value) || 0;
+            if (percentage !== 0) {
+                const preview = document.getElementById('affectedProductsPreview');
+                const changeText = percentage > 0 ? 'artacak' : 'azalacak';
+                const changeIcon = percentage > 0 ? '📈' : '📉';
+                
+                preview.innerHTML = `
+                    <div style="color: #333; font-weight: 500;">
+                        ${changeIcon} <strong>${Math.abs(percentage)}%</strong> fiyat ${changeText}
+                    </div>
+                    <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                        <strong>${products.length}</strong> ürün etkilenecek
+                    </div>
+                    <div style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
+                        ${products.slice(0, 10).map(product => {
+                            const newPrice = product.price * (1 + percentage / 100);
+                            return `
+                                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                                    <span>${product.name}</span>
+                                    <span>${product.price}₺ → <strong style="color: #FF6000;">${newPrice.toFixed(2)}₺</strong></span>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${products.length > 10 ? `<div style="color: #999; font-style: italic; padding: 5px 0;">... ve ${products.length - 10} ürün daha</div>` : ''}
+                    </div>
+                `;
+            }
+        });
+        
+        // Handle bulk price update form submission
+        document.getElementById('bulkPriceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const priceData = {
+                percentage_change: parseFloat(formData.get('percentage_change')),
+                reason: formData.get('reason') || 'Genel fiyat güncellemesi'
+            };
+            
+            if (!confirm(`Tüm ürün fiyatlarını %${priceData.percentage_change} ${priceData.percentage_change > 0 ? 'artırmak' : 'azaltmak'} istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
+                return;
+            }
+            
+            try {
+                const submitBtn = e.target.querySelector('.btn-primary');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Güncelleniyor...';
+                submitBtn.disabled = true;
+                
+                const response = await fetch('api/admin_prices.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(priceData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        closeModal('bulkPriceModal');
+                        loadPrices();
+                        loadDashboard();
+                    } else {
+                        alert('Fiyat güncellemesi başarısız: ' + result.message);
+                    }
+                } else {
+                    throw new Error('Fiyat güncellemesi yapılamadı');
+                }
+            } catch (error) {
+                console.error('Toplu fiyat güncelleme hatası:', error);
+                alert('Fiyat güncellemesi sırasında hata oluştu: ' + error.message);
+            } finally {
+                const submitBtn = e.target.querySelector('.btn-primary');
+                submitBtn.textContent = 'Fiyatları Güncelle';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Individual Price Edit Functions
+        function editProductPrice(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('editPriceProductId').value = product.id;
+            document.getElementById('editPriceProductName').value = product.name;
+            document.getElementById('editPriceProductCategory').value = product.category;
+            document.getElementById('editPriceProductType').value = product.bag_type || 'Çanta değil';
+            document.getElementById('editPriceProductDimensions').value = product.bag_dimensions || '-';
+            document.getElementById('editPriceOldPrice').value = product.price + '₺';
+            document.getElementById('editPriceNewPrice').value = product.price;
+            document.getElementById('editPriceReason').value = '';
+            
+            document.getElementById('editPriceModal').style.display = 'block';
+        }
+        
+        // Handle individual price update form submission
+        document.getElementById('editPriceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const priceData = {
+                price: parseFloat(formData.get('price')),
+                reason: formData.get('reason') || 'Tekil fiyat güncellemesi'
+            };
+            
+            const productId = formData.get('id');
+            const oldPrice = parseFloat(document.getElementById('editPriceOldPrice').value);
+            
+            if (priceData.price === oldPrice) {
+                alert('Yeni fiyat mevcut fiyattan farklı olmalıdır!');
+                return;
+            }
+            
+            if (!confirm(`Bu ürünün fiyatını ${oldPrice}₺'den ${priceData.price}₺'ye güncellemek istediğinizden emin misiniz?`)) {
+                return;
+            }
+            
+            try {
+                const submitBtn = e.target.querySelector('.btn-primary');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Güncelleniyor...';
+                submitBtn.disabled = true;
+                
+                const response = await fetch(`api/admin_prices.php?id=${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(priceData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        closeModal('editPriceModal');
+                        loadPrices();
+                        loadDashboard();
+                    } else {
+                        alert('Fiyat güncellemesi başarısız: ' + result.message);
+                    }
+                } else {
+                    throw new Error('Fiyat güncellemesi yapılamadı');
+                }
+            } catch (error) {
+                console.error('Tekil fiyat güncelleme hatası:', error);
+                alert('Fiyat güncellemesi sırasında hata oluştu: ' + error.message);
+            } finally {
+                const submitBtn = e.target.querySelector('.btn-primary');
+                submitBtn.textContent = 'Fiyatı Güncelle';
+                submitBtn.disabled = false;
+            }
+        });
         
         // Initialize dashboard on page load
         document.addEventListener('DOMContentLoaded', () => {
