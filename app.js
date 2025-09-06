@@ -4,7 +4,6 @@
 class LazyLoader {
     constructor() {
         this.imageObserver = null;
-        this.modelObserver = null;
         this.init();
     }
 
@@ -12,13 +11,10 @@ class LazyLoader {
         // Check for Intersection Observer support
         if ('IntersectionObserver' in window) {
             this.setupImageObserver();
-            this.setupModelObserver();
             this.observeImages();
-            this.observeModels();
         } else {
             // Fallback for older browsers
             this.loadAllImages();
-            this.loadAllModels();
         }
     }
 
@@ -39,22 +35,6 @@ class LazyLoader {
         }, options);
     }
 
-    setupModelObserver() {
-        const options = {
-            root: null,
-            rootMargin: '100px',
-            threshold: 0.1
-        };
-
-        this.modelObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    this.load3DModel(entry.target);
-                    this.modelObserver.unobserve(entry.target);
-                }
-            });
-        }, options);
-    }
 
     observeImages() {
         const lazyImages = document.querySelectorAll('.lazy-image');
@@ -63,12 +43,6 @@ class LazyLoader {
         });
     }
 
-    observeModels() {
-        const lazyModels = document.querySelectorAll('.lazy-3d-model');
-        lazyModels.forEach(model => {
-            this.modelObserver.observe(model);
-        });
-    }
 
     loadImage(img) {
         const src = img.getAttribute('data-src');
@@ -87,22 +61,6 @@ class LazyLoader {
         img.removeAttribute('data-src');
     }
 
-    load3DModel(model) {
-        const src = model.getAttribute('data-src');
-        if (!src) return;
-
-        model.addEventListener('load', () => {
-            model.classList.add('loaded');
-        });
-
-        model.addEventListener('error', () => {
-            model.classList.add('loaded');
-            console.warn(`Failed to load 3D model: ${src}`);
-        });
-
-        model.src = src;
-        model.removeAttribute('data-src');
-    }
 
     loadAllImages() {
         // Fallback for browsers without Intersection Observer
@@ -110,11 +68,6 @@ class LazyLoader {
         lazyImages.forEach(img => this.loadImage(img));
     }
 
-    loadAllModels() {
-        // Fallback for browsers without Intersection Observer
-        const lazyModels = document.querySelectorAll('.lazy-3d-model');
-        lazyModels.forEach(model => this.load3DModel(model));
-    }
 }
 
 // Initialize Lazy Loading
@@ -1138,7 +1091,6 @@ class BagConfigurator {
             }
             
             const text = await response.text();
-            console.log('API Response:', text); // Debug için
             
             // Check if response is valid JSON
             let data;
