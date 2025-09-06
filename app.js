@@ -411,31 +411,37 @@ class SalesManager {
             card.classList.remove('active');
         });
 
-        // Active card styling
-        this.sizeCards[this.sizeActive].style.transform = `translateX(-50%)`;
-        this.sizeCards[this.sizeActive].style.zIndex = 1;
-        this.sizeCards[this.sizeActive].style.filter = 'none';
-        this.sizeCards[this.sizeActive].style.opacity = 1;
-        this.sizeCards[this.sizeActive].classList.add('active');
+        // Active card styling - Check if element exists
+        if (this.sizeCards[this.sizeActive]) {
+            this.sizeCards[this.sizeActive].style.transform = `translateX(-50%)`;
+            this.sizeCards[this.sizeActive].style.zIndex = 1;
+            this.sizeCards[this.sizeActive].style.filter = 'none';
+            this.sizeCards[this.sizeActive].style.opacity = 1;
+            this.sizeCards[this.sizeActive].classList.add('active');
+        }
 
         // Cards after active (right side)
         let stt = 0;
         for(let i = this.sizeActive + 1; i < this.sizeCards.length; i++) {
             stt++;
-            this.sizeCards[i].style.transform = `translateX(calc(-50% + ${60*stt}px)) scale(${1 - 0.15*stt}) perspective(16px) rotateY(-1deg)`;
-            this.sizeCards[i].style.zIndex = -stt;
-            this.sizeCards[i].style.filter = 'blur(3px)';
-            this.sizeCards[i].style.opacity = stt > 2 ? 0 : 0.7;
+            if (this.sizeCards[i]) {
+                this.sizeCards[i].style.transform = `translateX(calc(-50% + ${60*stt}px)) scale(${1 - 0.15*stt}) perspective(16px) rotateY(-1deg)`;
+                this.sizeCards[i].style.zIndex = -stt;
+                this.sizeCards[i].style.filter = 'blur(3px)';
+                this.sizeCards[i].style.opacity = stt > 2 ? 0 : 0.7;
+            }
         }
 
         // Cards before active (left side)
         stt = 0;
         for(let i = (this.sizeActive - 1); i >= 0; i--) {
             stt++;
-            this.sizeCards[i].style.transform = `translateX(calc(-50% + ${-60*stt}px)) scale(${1 - 0.15*stt}) perspective(16px) rotateY(1deg)`;
-            this.sizeCards[i].style.zIndex = -stt;
-            this.sizeCards[i].style.filter = 'blur(3px)';
-            this.sizeCards[i].style.opacity = stt > 2 ? 0 : 0.7;
+            if (this.sizeCards[i]) {
+                this.sizeCards[i].style.transform = `translateX(calc(-50% + ${-60*stt}px)) scale(${1 - 0.15*stt}) perspective(16px) rotateY(1deg)`;
+                this.sizeCards[i].style.zIndex = -stt;
+                this.sizeCards[i].style.filter = 'blur(3px)';
+                this.sizeCards[i].style.opacity = stt > 2 ? 0 : 0.7;
+            }
         }
     }
 
@@ -1125,13 +1131,31 @@ class BagConfigurator {
     async loadBagSizes() {
         try {
             const response = await fetch('api/bag_sizes.php');
-            const data = await response.json();
+            
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const text = await response.text();
+            console.log('API Response:', text); // Debug için
+            
+            // Check if response is valid JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                console.error('Response text:', text);
+                throw new Error('Invalid JSON response from server');
+            }
             
             if (data.success) {
                 this.bagSizes = data.sizes;
                 this.renderSizes();
             } else {
                 console.error('Boyutlar yüklenemedi:', data.message);
+                this.loadDefaultSizes();
             }
         } catch (error) {
             console.error('Boyutlar yüklenirken hata:', error);
