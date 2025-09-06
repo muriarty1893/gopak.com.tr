@@ -399,11 +399,18 @@ class SalesManager {
     }
 
     updateConfigFromActiveCard() {
-        const activeCard = this.sizeCards[this.sizeActive];
-        this.updateConfigFromCard(activeCard);
+        if (this.sizeCards && this.sizeCards[this.sizeActive]) {
+            const activeCard = this.sizeCards[this.sizeActive];
+            this.updateConfigFromCard(activeCard);
+        }
     }
 
     updateConfigFromCard(card) {
+        if (!card || !card.dataset) {
+            console.warn('updateConfigFromCard: card or dataset is undefined');
+            return;
+        }
+        
         this.config.size = card.dataset.size;
         this.config.sizeMultiplier = parseFloat(card.dataset.multiplier);
         this.updatePreview();
@@ -452,8 +459,12 @@ class SalesManager {
         const selectedSpecs = document.getElementById('selectedSpecs');
 
         // Update text only (bag-shape removed)
-        selectedType.textContent = this.config.type === 'printed' ? 'Baskılı Çanta' : 'Baskısız Çanta';
-        selectedSpecs.textContent = `${this.config.colorName} - ${this.config.size} cm`;
+        if (selectedType) {
+            selectedType.textContent = this.config.type === 'printed' ? 'Baskılı Çanta' : 'Baskısız Çanta';
+        }
+        if (selectedSpecs) {
+            selectedSpecs.textContent = `${this.config.colorName} - ${this.config.size} cm`;
+        }
     }
 
     updatePricing() {
@@ -462,10 +473,15 @@ class SalesManager {
         const discount = this.config.quantity >= 500 ? 0.1 : 0;
         const total = subtotal * (1 - discount);
 
-        document.getElementById('unitPrice').textContent = `${unitPrice.toFixed(2)}₺`;
-        document.getElementById('totalQty').textContent = this.config.quantity.toString();
-        document.getElementById('sizeMultiplier').textContent = `x${this.config.sizeMultiplier}`;
-        document.getElementById('totalPrice').textContent = `${total.toFixed(0)}₺`;
+        const unitPriceEl = document.getElementById('unitPrice');
+        const totalQtyEl = document.getElementById('totalQty');
+        const sizeMultiplierEl = document.getElementById('sizeMultiplier');
+        const totalPriceEl = document.getElementById('totalPrice');
+        
+        if (unitPriceEl) unitPriceEl.textContent = `${unitPrice.toFixed(2)}₺`;
+        if (totalQtyEl) totalQtyEl.textContent = this.config.quantity.toString();
+        if (sizeMultiplierEl) sizeMultiplierEl.textContent = `x${this.config.sizeMultiplier}`;
+        if (totalPriceEl) totalPriceEl.textContent = `${total.toFixed(0)}₺`;
 
         // Update discount info visibility
         const discountInfo = document.querySelector('.discount-info');
@@ -1099,7 +1115,9 @@ class BagConfigurator {
             } catch (jsonError) {
                 console.error('JSON parse error:', jsonError);
                 console.error('Response text:', text);
-                throw new Error('Invalid JSON response from server');
+                console.warn('API endpoint not working, using fallback data');
+                this.loadDefaultSizes();
+                return;
             }
             
             if (data.success) {
