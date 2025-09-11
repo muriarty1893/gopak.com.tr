@@ -114,7 +114,7 @@ body {
 .nav-link:hover {
     color: #FF6000;
     background: rgba(255, 96, 0, 0.08);
-    transform: translateY(-1px);
+    transform: translateY(-6px);
 }
 
 .nav-link.active {
@@ -460,7 +460,7 @@ body {
         color: #FF6000;
         font-weight: 600;
         box-shadow: 0 4px 15px rgba(255, 96, 0, 0.3);
-        transform: translateY(-1px);
+        transform: translateY(-6px);
     }
     
     /* Close button for mobile menu */
@@ -1129,7 +1129,7 @@ html {
     border-color: #FF6000;
     background: linear-gradient(135deg, rgba(255, 96, 0, 0.08) 0%, rgba(255, 96, 0, 0.03) 100%);
     box-shadow: 0 8px 25px rgba(255, 96, 0, 0.2);
-    transform: translateY(-3px);
+    transform: translateY(-6px);
 }
 
 .type-option.active::before {
@@ -1457,9 +1457,6 @@ html {
     background: rgba(255, 255, 255, 0.9);
     border: 2px solid #e0e0e0;
     color: #2c3e50;
-    font-size: 1.8em;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-weight: 600;
     opacity: 0.8;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1471,6 +1468,15 @@ html {
     justify-content: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(5px);
+    padding: 0;
+    margin: 0;
+}
+
+.size-prev svg, .size-next svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
 }
 
 .size-prev { 
@@ -1677,7 +1683,7 @@ html {
 }
 
 .add-to-cart-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-6px);
     box-shadow: 0 4px 12px rgba(255, 96, 0, 0.3);
     background: #e55a00;
 }
@@ -1870,7 +1876,7 @@ html {
 
 .submit-btn:hover {
     background: #e55a00;
-    transform: translateY(-1px);
+    transform: translateY(-6px);
     box-shadow: 0 4px 12px rgba(255, 96, 0, 0.3);
 }
 
@@ -2281,9 +2287,18 @@ html {
     .size-prev, .size-next {
         width: 35px;
         height: 35px;
-        font-size: 1.3em;
         left: 10px;
         right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .size-prev svg, .size-next svg {
+        width: 16px;
+        height: 16px;
     }
     
     .size-next {
@@ -2672,7 +2687,7 @@ html {
 
 .btn-submit:hover {
     background: #e55a00;
-    transform: translateY(-1px);
+    transform: translateY(-6px);
     box-shadow: 0 4px 12px rgba(255, 96, 0, 0.3);
 }
 
@@ -3266,12 +3281,22 @@ html {
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    font-size: 1.5em;
-    font-weight: bold;
     cursor: pointer;
     opacity: 0.8;
     transition: all 0.3s ease;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.size-prev svg, .size-next svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
 }
 
 .size-prev {
@@ -3403,7 +3428,16 @@ html {
     .size-prev, .size-next {
         width: 40px;
         height: 40px;
-        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .size-prev svg, .size-next svg {
+        width: 18px;
+        height: 18px;
     }
     
     .qty-presets {
@@ -3440,7 +3474,16 @@ html {
     .size-prev, .size-next {
         width: 35px;
         height: 35px;
-        font-size: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .size-prev svg, .size-next svg {
+        width: 16px;
+        height: 16px;
     }
 }
 
