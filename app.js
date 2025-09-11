@@ -1123,6 +1123,7 @@ class BagConfigurator {
         await this.loadBagSizes();
         this.setupEventListeners();
         this.updateUI();
+        this.updateSizeCardPrices(); // Başlangıçta size card fiyatlarını güncelle
         this.updateCartCount(); // Başlangıçta cart count'u güncelle
     }
 
@@ -1397,6 +1398,7 @@ class BagConfigurator {
         this.updateQuantityInput();
         this.updateQuantityPresets();
         this.updatePriceCalculation();
+        this.updateSizeCardPrices(); // Size card fiyatlarını güncelle
         this.updateAddToCartButton();
     }
 
@@ -1495,6 +1497,59 @@ class BagConfigurator {
         document.getElementById('totalPrice').textContent = totalPrice.toFixed(2) + '₺';
     }
 
+    // Size card'ların fiyatlarını günceller
+    updateSizeCardPrices() {
+        const sizeCards = document.querySelectorAll('.size-card');
+        const mobileSizeButtons = document.querySelectorAll('.size-btn');
+        
+        sizeCards.forEach(card => {
+            const basePrice = parseFloat(card.dataset.basePrice);
+            if (basePrice) {
+                let adjustedPrice = basePrice;
+                
+                // Kumaş tipine göre fiyat ayarı
+                if (this.selectedFabric === 'premium') {
+                    adjustedPrice *= 1.3; // Premium kumaş %30 daha pahalı
+                }
+
+                // Özel baskı ek ücreti
+                if (this.selectedPrint === 'yes') {
+                    adjustedPrice += 1.0; // Özel baskı +1₺/adet
+                }
+                
+                // Size card'daki fiyat elementini güncelle
+                const priceElement = card.querySelector('.size-price');
+                if (priceElement) {
+                    priceElement.textContent = `${adjustedPrice.toFixed(2)}₺/adet`;
+                }
+            }
+        });
+        
+        // Mobil butonların fiyatlarını da güncelle
+        mobileSizeButtons.forEach(button => {
+            const basePrice = parseFloat(button.dataset.basePrice);
+            if (basePrice) {
+                let adjustedPrice = basePrice;
+                
+                // Kumaş tipine göre fiyat ayarı
+                if (this.selectedFabric === 'premium') {
+                    adjustedPrice *= 1.3; // Premium kumaş %30 daha pahalı
+                }
+
+                // Özel baskı ek ücreti
+                if (this.selectedPrint === 'yes') {
+                    adjustedPrice += 1.0; // Özel baskı +1₺/adet
+                }
+                
+                // Mobil buton fiyat elementini güncelle
+                const priceElement = button.querySelector('.size-price-mobile');
+                if (priceElement) {
+                    priceElement.textContent = `${adjustedPrice.toFixed(2)}₺/adet`;
+                }
+            }
+        });
+    }
+
     updateAddToCartButton() {
         const addToCartBtn = document.getElementById('addToCartBtn');
         if (!addToCartBtn) return;
@@ -1517,6 +1572,7 @@ class BagConfigurator {
                 
                 this.selectedBagType = option.dataset.category;
                 this.renderSizes();
+                this.updateSizeCardPrices(); // Size card fiyatlarını güncelle
                 this.updateUI();
             });
         });
@@ -1529,6 +1585,7 @@ class BagConfigurator {
                 
                 this.selectedFabric = option.dataset.fabric;
                 this.updatePriceCalculation();
+                this.updateSizeCardPrices(); // Size card fiyatlarını güncelle
                 this.updateUI();
             });
         });
@@ -1541,6 +1598,7 @@ class BagConfigurator {
                 
                 this.selectedPrint = option.dataset.print;
                 this.updatePriceCalculation();
+                this.updateSizeCardPrices(); // Size card fiyatlarını güncelle
                 this.updateUI();
             });
         });
