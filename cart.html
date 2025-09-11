@@ -289,6 +289,30 @@
             box-shadow: 0 2px 6px rgba(255, 96, 0, 0.1);
         }
 
+        .clear-cart-btn {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 15px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .clear-cart-btn:hover {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border-color: #dc3545;
+            box-shadow: 0 2px 6px rgba(220, 53, 69, 0.2);
+            transform: translateY(-1px);
+        }
+
         /* Responsive */
         @media screen and (max-width: 768px) {
             .cart-content {
@@ -304,6 +328,18 @@
 
             .item-quantity {
                 justify-content: center;
+            }
+
+            .cart-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .clear-cart-btn {
+                margin-left: 0;
+                margin-top: 10px;
             }
         }
     </style>
@@ -322,6 +358,7 @@
 
             <div class="cart-actions" style="text-align: center; margin-top: 40px;">
                 <a href="index.html#sales" class="continue-shopping">⬅ Alışverişe Devam Et</a>
+                <button id="clearCartBtn" class="clear-cart-btn" style="display: none;">🗑️ Sepeti Boşalt</button>
             </div>
         </div>
     </div>
@@ -395,12 +432,15 @@
 
             renderCart() {
                 const cartContent = document.getElementById('cartContent');
+                const clearCartBtn = document.getElementById('clearCartBtn');
                 const cart = this.cartManager.cart;
 
                 if (cart.length === 0) {
                     cartContent.innerHTML = this.renderEmptyCart();
+                    if (clearCartBtn) clearCartBtn.style.display = 'none';
                 } else {
                     cartContent.innerHTML = this.renderCartItems(cart);
+                    if (clearCartBtn) clearCartBtn.style.display = 'inline-block';
                     this.setupCartControls();
                 }
             }
@@ -475,7 +515,11 @@
             }
 
             setupCartControls() {
-                // Controls are handled by onclick events in the HTML
+                // Setup clear cart button
+                const clearCartBtn = document.getElementById('clearCartBtn');
+                if (clearCartBtn) {
+                    clearCartBtn.onclick = () => this.clearCart();
+                }
             }
 
             updateQuantity(itemId, newQuantity) {
@@ -505,6 +549,20 @@
                 
                 // Show removal notification
                 this.showNotification('Ürün sepetten kaldırıldı', 'info');
+            }
+
+            clearCart() {
+                if (this.cartManager.cart.length === 0) {
+                    return;
+                }
+
+                if (confirm('Sepetinizdeki tüm ürünleri kaldırmak istediğinizden emin misiniz?')) {
+                    this.cartManager.clearCart();
+                    this.renderCart();
+                    
+                    // Show clear notification
+                    this.showNotification('Sepet başarıyla boşaltıldı', 'info');
+                }
             }
 
             proceedToCheckout() {
