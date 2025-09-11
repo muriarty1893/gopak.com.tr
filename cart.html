@@ -492,7 +492,6 @@
 
             renderCartItems(cart) {
                 const subtotal = cart.reduce((sum, item) => sum + (item.subtotal || item.unitPrice * item.quantity || 0), 0);
-                const totalDiscount = cart.reduce((sum, item) => sum + ((item.subtotal || 0) * (item.discount || 0)), 0);
                 const total = cart.reduce((sum, item) => sum + (item.total || item.unitPrice * item.quantity || 0), 0);
 
                 const itemsHtml = cart.map((item, index) => `
@@ -523,12 +522,6 @@
                                 <span>Ara Toplam:</span>
                                 <span>${subtotal.toFixed(0)}₺</span>
                             </div>
-                            ${totalDiscount > 0 ? `
-                                <div class="summary-row">
-                                    <span>İndirim (%10):</span>
-                                    <span style="color: #FF6000;">-${totalDiscount.toFixed(0)}₺</span>
-                                </div>
-                            ` : ''}
                             <div class="summary-row">
                                 <span>Kargo:</span>
                                 <span style="color: #FF6000;">Ücretsiz</span>
@@ -570,7 +563,7 @@
                     item.quantity = newQuantity;
                     // Recalculate pricing
                     item.subtotal = item.unitPrice * item.quantity;
-                    item.total = item.subtotal * (1 - (item.discount || 0));
+                    item.total = item.subtotal;
                     
                     this.cartManager.saveCart(this.cartManager.cart);
                     this.renderCart();
@@ -615,9 +608,8 @@
                 
                 // Calculate totals for all cart items
                 const cart = this.cartManager.cart;
-                const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-                const totalDiscount = cart.reduce((sum, item) => sum + (item.subtotal * item.discount), 0);
-                const total = cart.reduce((sum, item) => sum + item.total, 0);
+                const subtotal = cart.reduce((sum, item) => sum + (item.subtotal || item.unitPrice * item.quantity || 0), 0);
+                const total = cart.reduce((sum, item) => sum + (item.total || item.unitPrice * item.quantity || 0), 0);
                 
                 // Fill order details in modal
                 let orderDetailsHtml = '';
@@ -641,12 +633,6 @@
                             <span>Ara Toplam:</span>
                             <span>${subtotal.toFixed(0)}₺</span>
                         </div>
-                        ${totalDiscount > 0 ? `
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>İndirim:</span>
-                                <span style="color: #FF6000;">-${totalDiscount.toFixed(0)}₺</span>
-                            </div>
-                        ` : ''}
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span>Kargo:</span>
                             <span style="color: #FF6000;">Ücretsiz</span>

@@ -470,8 +470,7 @@ class SalesManager {
     updatePricing() {
         const unitPrice = this.config.basePrice * this.config.sizeMultiplier;
         const subtotal = unitPrice * this.config.quantity;
-        const discount = this.config.quantity >= 500 ? 0.1 : 0;
-        const total = subtotal * (1 - discount);
+        const total = subtotal;
 
         const unitPriceEl = document.getElementById('unitPrice');
         const totalQtyEl = document.getElementById('totalQty');
@@ -483,15 +482,6 @@ class SalesManager {
         if (sizeMultiplierEl) sizeMultiplierEl.textContent = `x${this.config.sizeMultiplier}`;
         if (totalPriceEl) totalPriceEl.textContent = `${total.toFixed(0)}₺`;
 
-        // Update discount info visibility
-        const discountInfo = document.querySelector('.discount-info');
-        if (this.config.quantity >= 500) {
-            discountInfo.style.background = 'rgba(144, 238, 144, 0.2)';
-            discountInfo.style.borderColor = 'rgba(144, 238, 144, 0.4)';
-        } else {
-            discountInfo.style.background = 'rgba(144, 238, 144, 0.1)';
-            discountInfo.style.borderColor = 'rgba(144, 238, 144, 0.2)';
-        }
     }
 }
 
@@ -527,8 +517,7 @@ class CartManager {
         const config = salesManager.config;
         const unitPrice = config.basePrice * config.sizeMultiplier;
         const subtotal = unitPrice * config.quantity;
-        const discount = config.quantity >= 500 ? 0.1 : 0;
-        const total = subtotal * (1 - discount);
+        const total = subtotal;
 
         const cartItem = {
             id: Date.now(),
@@ -541,7 +530,7 @@ class CartManager {
             unitPrice: unitPrice,
             sizeMultiplier: config.sizeMultiplier,
             subtotal: subtotal,
-            discount: discount,
+            discount: 0,
             total: total,
             addedAt: new Date().toISOString()
         };
@@ -570,8 +559,8 @@ class CartManager {
             
             // Recalculate pricing
             existingItem.subtotal = existingItem.unitPrice * existingItem.quantity;
-            existingItem.discount = existingItem.quantity >= 500 ? 0.1 : 0;
-            existingItem.total = existingItem.subtotal * (1 - existingItem.discount);
+            existingItem.discount = 0;
+            existingItem.total = existingItem.subtotal;
             existingItem.addedAt = new Date().toISOString(); // Update timestamp
             
             console.log(`Updated existing item: ${itemKey}, new quantity: ${existingItem.quantity}`);
