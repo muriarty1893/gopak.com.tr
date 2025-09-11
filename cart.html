@@ -419,14 +419,48 @@
             }
 
             init() {
-                // Wait for cart manager to be available
-                if (window.cartManagerInstance) {
-                    this.cartManager = window.cartManagerInstance;
-                    this.renderCart();
-                } else {
-                    // Initialize cart manager if not available
-                    this.cartManager = new CartManager();
-                    this.renderCart();
+                // Always create our own cart manager for cart page
+                this.cartManager = {
+                    cart: this.loadCart(),
+                    loadCart: () => {
+                        try {
+                            const savedCart = localStorage.getItem('gopak_cart');
+                            return savedCart ? JSON.parse(savedCart) : [];
+                        } catch (error) {
+                            console.error('Error loading cart:', error);
+                            return [];
+                        }
+                    },
+                    saveCart: (cart) => {
+                        try {
+                            localStorage.setItem('gopak_cart', JSON.stringify(cart));
+                        } catch (error) {
+                            console.error('Error saving cart:', error);
+                        }
+                    },
+                    removeFromCart: (itemId) => {
+                        const itemIndex = this.cartManager.cart.findIndex(item => item.id === itemId);
+                        if (itemIndex !== -1) {
+                            this.cartManager.cart.splice(itemIndex, 1);
+                            this.cartManager.saveCart(this.cartManager.cart);
+                        }
+                    },
+                    clearCart: () => {
+                        this.cartManager.cart = [];
+                        this.cartManager.saveCart([]);
+                    }
+                };
+                
+                this.renderCart();
+            }
+
+            loadCart() {
+                try {
+                    const savedCart = localStorage.getItem('gopak_cart');
+                    return savedCart ? JSON.parse(savedCart) : [];
+                } catch (error) {
+                    console.error('Error loading cart:', error);
+                    return [];
                 }
             }
 
@@ -457,20 +491,20 @@
             }
 
             renderCartItems(cart) {
-                const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-                const totalDiscount = cart.reduce((sum, item) => sum + (item.subtotal * item.discount), 0);
-                const total = cart.reduce((sum, item) => sum + item.total, 0);
+                const subtotal = cart.reduce((sum, item) => sum + (item.subtotal || item.unitPrice * item.quantity || 0), 0);
+                const totalDiscount = cart.reduce((sum, item) => sum + ((item.subtotal || 0) * (item.discount || 0)), 0);
+                const total = cart.reduce((sum, item) => sum + (item.total || item.unitPrice * item.quantity || 0), 0);
 
                 const itemsHtml = cart.map((item, index) => `
                     <div class="cart-item" data-item-id="${item.id}">
                         <div class="item-details">
-                            <div class="item-name">${item.typeName}</div>
-                            <div class="item-specs">${item.colorName} - ${item.size} cm</div>
-                            <div class="item-price">${item.total.toFixed(0)}₺</div>
+                            <div class="item-name">${item.typeName || 'Ürün'}</div>
+                            <div class="item-specs">${item.colorName || 'Renk'} - ${item.size || item.bagDimensions || 'Boyut'}${item.size && !item.size.includes('cm') ? ' cm' : ''}</div>
+                            <div class="item-price">${(item.total || item.unitPrice * item.quantity || 0).toFixed(0)}₺</div>
                         </div>
                         <div class="item-quantity">
                             <span class="qty-control" onclick="cartPage.updateQuantity(${item.id}, ${item.quantity - 50})">-</span>
-                            <span style="margin: 0 10px; font-weight: bold;">${item.quantity} adet</span>
+                            <span style="margin: 0 10px; font-weight: bold;">${item.quantity || 0} adet</span>
                             <span class="qty-control" onclick="cartPage.updateQuantity(${item.id}, ${item.quantity + 50})">+</span>
                         </div>
                         <button class="item-remove" onclick="cartPage.removeItem(${item.id})">🗑 Kaldır</button>
@@ -536,9 +570,9 @@
                     item.quantity = newQuantity;
                     // Recalculate pricing
                     item.subtotal = item.unitPrice * item.quantity;
-                    item.total = item.subtotal * (1 - item.discount);
+                    item.total = item.subtotal * (1 - (item.discount || 0));
                     
-                    this.cartManager.saveCart();
+                    this.cartManager.saveCart(this.cartManager.cart);
                     this.renderCart();
                 }
             }

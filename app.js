@@ -495,7 +495,7 @@ class SalesManager {
     }
 }
 
-// Cart Management System
+// Unified Cart Management System
 class CartManager {
     constructor() {
         this.cart = this.loadCart();
@@ -508,7 +508,8 @@ class CartManager {
     }
 
     setupAddToCartButton() {
-        const addToCartBtn = document.querySelector('.add-to-cart-btn');
+        // Only setup for the old cart system (second section)
+        const addToCartBtn = document.querySelector('#sales2 .add-to-cart-btn');
         if (addToCartBtn) {
             addToCartBtn.addEventListener('click', () => {
                 this.addToCart();
@@ -530,7 +531,7 @@ class CartManager {
         const total = subtotal * (1 - discount);
 
         const cartItem = {
-            id: Date.now(), // Simple ID for now
+            id: Date.now(),
             type: config.type,
             typeName: config.type === 'printed' ? 'Baskılı Çanta' : 'Baskısız Çanta',
             color: config.color,
@@ -545,11 +546,40 @@ class CartManager {
             addedAt: new Date().toISOString()
         };
 
-        // Add to cart directly
-        this.cart.push(cartItem);
+        // Check if same item exists and update quantity instead of adding new
+        this.addOrUpdateItem(cartItem);
         this.saveCart();
         this.showAddToCartSuccess(cartItem);
         this.updateCartDisplay();
+    }
+
+    // Unified method to add or update existing items
+    addOrUpdateItem(newItem) {
+        // Create a unique key for each product variant
+        const itemKey = `${newItem.typeName}_${newItem.colorName}_${newItem.size}`;
+        
+        // Check if this exact product variant already exists
+        const existingItemIndex = this.cart.findIndex(item => 
+            `${item.typeName}_${item.colorName}_${item.size}` === itemKey
+        );
+
+        if (existingItemIndex !== -1) {
+            // Update existing item quantity and recalculate totals
+            const existingItem = this.cart[existingItemIndex];
+            existingItem.quantity += newItem.quantity;
+            
+            // Recalculate pricing
+            existingItem.subtotal = existingItem.unitPrice * existingItem.quantity;
+            existingItem.discount = existingItem.quantity >= 500 ? 0.1 : 0;
+            existingItem.total = existingItem.subtotal * (1 - existingItem.discount);
+            existingItem.addedAt = new Date().toISOString(); // Update timestamp
+            
+            console.log(`Updated existing item: ${itemKey}, new quantity: ${existingItem.quantity}`);
+        } else {
+            // Add as new item
+            this.cart.push(newItem);
+            console.log(`Added new item: ${itemKey}, quantity: ${newItem.quantity}`);
+        }
     }
 
 
@@ -659,7 +689,17 @@ class CartManager {
     }
 
     removeFromCart(itemId) {
-        this.cart = this.cart.filter(item => item.id !== itemId);
+        // Find item by ID specifically, not by any other criteria
+        const itemIndex = this.cart.findIndex(item => item.id === itemId);
+        
+        if (itemIndex !== -1) {
+            // Remove only the specific item with this ID
+            this.cart.splice(itemIndex, 1);
+            console.log(`Removed item with ID: ${itemId}`);
+        } else {
+            console.warn(`Item with ID ${itemId} not found in cart`);
+        }
+        
         this.saveCart();
         this.updateCartDisplay();
     }
@@ -1663,14 +1703,20 @@ class BagConfigurator {
         const unitPrice = parseFloat(document.getElementById('unitPrice').textContent);
         const totalPrice = parseFloat(document.getElementById('totalPrice').textContent);
 
+        // Create standardized cart item compatible with unified CartManager
         const cartItem = {
             id: Date.now(),
+            type: 'bag', // Standard type for new system
             typeName: this.selectedBagType,
+            color: this.selectedFabric,
             colorName: this.selectedFabric === 'premium' ? 'Premium Kumaş' : 'Standart Kumaş',
             printType: this.selectedPrint === 'yes' ? 'Özel Baskı' : 'Baskısız',
             size: this.selectedSize.dimensions,
             quantity: this.selectedQuantity,
             unitPrice: unitPrice,
+            sizeMultiplier: 1.0,
+            subtotal: totalPrice,
+            discount: 0,
             total: totalPrice,
             minQuantity: this.selectedSize.min_quantity,
             bagType: this.selectedBagType,
@@ -1678,10 +1724,35 @@ class BagConfigurator {
             addedAt: new Date().toISOString()
         };
 
-        // Eski sepet sistemine uygun formatta ekle
-        let cart = JSON.parse(localStorage.getItem('gopak_cart') || '[]');
-        cart.push(cartItem);
-        localStorage.setItem('gopak_cart', JSON.stringify(cart));
+        // Use unified cart manager if available, otherwise fall back to direct localStorage
+        if (window.cartManagerInstance) {
+            window.cartManagerInstance.addOrUpdateItem(cartItem);
+            window.cartManagerInstance.saveCart();
+            window.cartManagerInstance.updateCartDisplay();
+        } else {
+            // Fallback: Check for duplicates manually and add to localStorage
+            let cart = JSON.parse(localStorage.getItem('gopak_cart') || '[]');
+            
+            // Create unique key
+            const itemKey = `${cartItem.typeName}_${cartItem.colorName}_${cartItem.size}`;
+            
+            // Check if item exists
+            const existingItemIndex = cart.findIndex(item => 
+                `${item.typeName}_${item.colorName}_${item.size}` === itemKey
+            );
+
+            if (existingItemIndex !== -1) {
+                // Update existing item
+                cart[existingItemIndex].quantity += cartItem.quantity;
+                cart[existingItemIndex].total = cart[existingItemIndex].unitPrice * cart[existingItemIndex].quantity;
+                cart[existingItemIndex].addedAt = new Date().toISOString();
+            } else {
+                // Add new item
+                cart.push(cartItem);
+            }
+            
+            localStorage.setItem('gopak_cart', JSON.stringify(cart));
+        }
 
         // Cart count güncelle
         this.updateCartCount();
@@ -1755,6 +1826,7 @@ class BagConfigurator {
         const cart = JSON.parse(localStorage.getItem('gopak_cart') || '[]');
         const cartCount = document.getElementById('cartCount');
         if (cartCount) {
+            // Count total items (items count, not total quantity)
             cartCount.textContent = cart.length;
             cartCount.style.display = cart.length > 0 ? 'flex' : 'none';
         }
