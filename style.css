@@ -108,7 +108,9 @@ body {
     transition: all 0.3s ease;
     position: relative;
     white-space: nowrap;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .nav-link:hover {
