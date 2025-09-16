@@ -574,27 +574,21 @@ class CartManager {
 
 
     showAddToCartSuccess(item) {
-        // Calculate safe position for notification (avoid cart button)
-        const cartButton = document.querySelector('.cart-button-wrapper');
-        const isCartVisible = cartButton && cartButton.classList.contains('visible');
+        // Calculate safe position for notification (avoid header)
+        const header = document.querySelector('.main-header');
+        const headerHeight = header ? header.offsetHeight : 80;
         
-        // Determine notification position based on screen size and cart button visibility
+        // Determine notification position based on screen size
         const isMobile = window.innerWidth <= 768;
         const isSmallMobile = window.innerWidth <= 480;
-        let topPosition = '20px';
+        let topPosition;
         
-        if (isCartVisible) {
-            // If cart button is visible, position notification below it
-            if (isSmallMobile) {
-                topPosition = '90px'; // Smaller gap for very small screens
-            } else if (isMobile) {
-                topPosition = '100px';
-            } else {
-                topPosition = '110px';
-            }
+        if (isSmallMobile) {
+            topPosition = `${headerHeight + 10}px`; // Header height + 10px gap
+        } else if (isMobile) {
+            topPosition = `${headerHeight + 15}px`; // Header height + 15px gap
         } else {
-            // If cart button is not visible, use top position
-            topPosition = '20px';
+            topPosition = `${headerHeight + 20}px`; // Header height + 20px gap
         }
         
         // Show temporary success notification
@@ -608,7 +602,7 @@ class CartManager {
             padding: 15px 20px;
             border-radius: 10px;
             box-shadow: 0 10px 20px rgba(144, 238, 144, 0.3);
-            z-index: 999;
+            z-index: 1001;
             font-weight: bold;
             max-width: ${isMobile ? '280px' : '300px'};
             animation: slideInRight 0.3s ease;
@@ -1811,16 +1805,28 @@ class BagConfigurator {
     showAddToCartSuccess(item) {
         // Başarı bildirimi göster
         const notification = document.createElement('div');
+        // Calculate safe position for notification (avoid header)
+        const header = document.querySelector('.main-header');
+        const headerHeight = header ? header.offsetHeight : 80;
+        const isMobile = window.innerWidth <= 768;
+        
+        let topPosition;
+        if (isMobile) {
+            topPosition = `${headerHeight + 10}px`; // Header height + 10px gap
+        } else {
+            topPosition = `${headerHeight + 20}px`; // Header height + 20px gap
+        }
+        
         notification.style.cssText = `
             position: fixed;
-            top: 20px;
+            top: ${topPosition};
             right: 20px;
             background: linear-gradient(135deg, #90EE90, #32CD32);
             color: #000;
             padding: 15px 20px;
             border-radius: 10px;
             box-shadow: 0 10px 20px rgba(144, 238, 144, 0.3);
-            z-index: 999;
+            z-index: 1001;
             font-weight: bold;
             max-width: 300px;
             animation: slideInRight 0.3s ease;
